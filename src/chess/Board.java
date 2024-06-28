@@ -1,8 +1,6 @@
 package chess;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.Objects;
 import javax.imageio.ImageIO;
 
@@ -59,7 +57,6 @@ public class Board {
         //Draw the piece
         try {
             Image img = ImageIO.read(Objects.requireNonNull(getClass().getResource(piece.imagePath)));
-            System.out.println("Image Path" + piece.imagePath);
             g.drawImage(img, piece.position[0], piece.position[1], null);
         } 
         catch (Exception ex) {
@@ -67,13 +64,11 @@ public class Board {
         }
         //Save it in the array
        int[] indices = getIndexfromCoords(piece.position[0], piece.position[1]);
-       System.out.println("COORDS: " + indices[0] + " " + indices[1]);
        spacesArr[indices[0]][indices[1]].currentPiece = piece;
     }
 
     public void clearSpace(Graphics g, String notation) {
         Space space = this.getSpace(notation);
-        System.out.println( space.currentPiece.position[0] + " " + space.currentPiece.position[0]);
         g.setColor(space.spaceColor);
         g.fillRect(space.YPOS, space.XPOS, spaceWidthLength, spaceWidthLength);
     }
@@ -90,10 +85,12 @@ public class Board {
 
     public Space getSpace(String notation) {
         Piece piece = new Piece(notation);
-        System.out.println(piece.position[0]+ " " + piece.position[1]);
         int[] indices = getIndexfromCoords(piece.position[0], piece.position[1]);
-        System.out.println(indices[0] + " " + indices[1]);
-        System.out.println();
+        return spacesArr[indices[0]][indices[1]];
+    }
+
+    public Space getSpaceFromXY(int x, int y) {
+        int[] indices = getIndexfromCoords(x, y);
         return spacesArr[indices[0]][indices[1]];
     }
 }
