@@ -67,7 +67,7 @@ public class Board {
         //Save it in the array
        int[] indices = getIndexfromCoords(piece.position.x, piece.position.y);
        spacesArr[indices[0]][indices[1]].currentPiece = piece;
-       System.out.println(piece.imagePath + " " + indices[0] + " " + indices[1]);
+    //    System.out.println(piece.imagePath + " " + indices[0] + " " + indices[1]);
     }
 
     public void clearSpace(Graphics g, String notation) {
