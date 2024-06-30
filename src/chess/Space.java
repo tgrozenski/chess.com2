@@ -11,8 +11,8 @@ public class Space {
     public int YPOS;
 
     public Space(Color color, int x, int y) {
-        this.XPOS = x;
-        this.YPOS = y;
+        this.XPOS = y;
+        this.YPOS = x;
         this.spaceColor = color;
     }
 

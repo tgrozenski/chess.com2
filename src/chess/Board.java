@@ -13,6 +13,7 @@ public class Board {
     public static final Color highlightColor = new Color(255,255,102);
     private static Color currentColor = primaryColor;
     private static Space[][] spacesArr = new Space[8][8];
+    public static Piece lastPieceMoved;
 
     public Space[][] drawSpaces(Graphics g) {
         for (int currentY = spaceWidthLength, outer = 0; currentY <= boardWidthLength; currentY+=100, outer++) {
@@ -57,13 +58,13 @@ public class Board {
         //Draw the piece
         try {
             Image img = ImageIO.read(Objects.requireNonNull(getClass().getResource(piece.imagePath)));
-            g.drawImage(img, piece.position[0], piece.position[1], null);
+            g.drawImage(img, piece.position.x, piece.position.x, null);
         } 
         catch (Exception ex) {
             ex.printStackTrace();
         }
         //Save it in the array
-       int[] indices = getIndexfromCoords(piece.position[0], piece.position[1]);
+       int[] indices = getIndexfromCoords(piece.position.x, piece.position.x);
        spacesArr[indices[0]][indices[1]].currentPiece = piece;
     }
 
@@ -79,18 +80,18 @@ public class Board {
     
     public Color getColor(String notation) {
         Piece myPiece = new Piece(notation);
-        int[] indices = getIndexfromCoords(myPiece.position[0], myPiece.position[1]);
+        int[] indices = getIndexfromCoords(myPiece.position.x, myPiece.position.y);
         return spacesArr[indices[0]][indices[1]].spaceColor;
     }
 
     public Space getSpace(String notation) {
         Piece piece = new Piece(notation);
-        int[] indices = getIndexfromCoords(piece.position[0], piece.position[1]);
+        int[] indices = getIndexfromCoords(piece.position.x, piece.position.y);
         return spacesArr[indices[0]][indices[1]];
     }
 
-    public Space getSpaceFromXY(int x, int y) {
-        int[] indices = getIndexfromCoords(x, y);
+    public Space getSpaceFromCoord(Coord coord) {
+        int[] indices = getIndexfromCoords(coord.x, coord.y);
         return spacesArr[indices[0]][indices[1]];
     }
 }

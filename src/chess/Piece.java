@@ -1,8 +1,9 @@
 package chess;
+import java.util.ArrayList;
 
 public class Piece {
     public String notation; 
-    public int[] position; 
+    public Coord position;
     public char pieceType;
     int color;
     public boolean isTaken = false;
@@ -17,11 +18,11 @@ public class Piece {
         this.imagePath = getImagePath();
     }
     //1ke8
-    private int[] notationToCoords(String notation) {
-        int[] coords = new int[2];
-        coords[0] = ((int) notation.charAt(2) - 96) * 100;
-        coords[1] = (9 - Integer.parseInt(notation.charAt(3) + "")) * 100;
-        return coords;
+    private Coord notationToCoords(String notation) {
+        int x = ((int) notation.charAt(2) - 96) * 100;
+        int y = (9 - Character.getNumericValue(notation.charAt(3))) * 100;
+        Coord coord = new Coord(x, y);
+        return coord;
     }
 
     public char notationtoPieceType(String notation) {
@@ -30,6 +31,12 @@ public class Piece {
 
     private int notationtoColor(String notation) {
         return Integer.parseInt(notation.charAt(0) + "");
+    }
+
+    public ArrayList<Coord> getLegalMoves() {
+        RuleManager rm = new RuleManager();
+        ArrayList<Coord> arr = rm.getLegalMoves(this);
+        return arr;
     }
 
     private String getImagePath() {
