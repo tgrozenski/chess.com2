@@ -58,14 +58,16 @@ public class Board {
         //Draw the piece
         try {
             Image img = ImageIO.read(Objects.requireNonNull(getClass().getResource(piece.imagePath)));
-            g.drawImage(img, piece.position.x, piece.position.x, null);
+            // System.out.println(piece.imagePath + " " + piece.position.x + " " + piece.position.y);
+            g.drawImage(img, piece.position.x, piece.position.y, null);
         } 
         catch (Exception ex) {
             ex.printStackTrace();
         }
         //Save it in the array
-       int[] indices = getIndexfromCoords(piece.position.x, piece.position.x);
+       int[] indices = getIndexfromCoords(piece.position.x, piece.position.y);
        spacesArr[indices[0]][indices[1]].currentPiece = piece;
+       System.out.println(piece.imagePath + " " + indices[0] + " " + indices[1]);
     }
 
     public void clearSpace(Graphics g, String notation) {

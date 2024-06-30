@@ -100,6 +100,12 @@ public class RuleManager {
 
     public void getKingMoves(Piece p) {
         Coord currentPos = new Coord(p.position.x, p.position.y);
+        if(p.color == WHITE) {
+                        
+        }
+        else {
+
+        }
     }
         //TODO AU PASSANT 
         //Pawn can take au PASSANT if pawn moved by two squares next to it on the left or right

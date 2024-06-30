@@ -24,14 +24,14 @@ public class Chess {
         panel.addMouseListener( new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                Space touchedSpace = tempBoard.getSpaceFromXY(roundDownNearest100(e.getX()), roundDownNearest100(e.getY()));
+                Space touchedSpace = tempBoard.getSpaceFromCoord(new Coord(roundDownNearest100(e.getX()), roundDownNearest100(e.getY())));
                 System.out.println("Pressed " + touchedSpace.XPOS + " " + touchedSpace.YPOS);
+                System.out.println(touchedSpace.currentPiece.imagePath);
                 if(touchedSpace.currentPiece != null) {
                     touchedSpace.currentPiece.getLegalMoves().forEach( c -> {
                     System.out.println("Legal Moves " + c.x + " " + c.y);
                 });
                 }
-                // System.out.println(touchedSpace.currentPiece.imagePath);
             }
         });
 
@@ -72,7 +72,8 @@ class MyPanel extends JPanel {
             Piece piece = new Piece(str);
             board.renderSpace(g, piece);
         }
-        System.out.println(board.getColor("00f3"));
+        // Piece piece = new Piece("1pd4");
+        // board.renderSpace(g, piece);
         // Space space = board.getSpace("00d1");
 //        board.clearSpace(g, "00h8");
 
