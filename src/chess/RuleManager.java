@@ -14,10 +14,14 @@ public class RuleManager {
                 getKingMoves(p);
                 break;
             case 'q':
+                getBishopMoves(p);
+                getRookMoves(p);
                 break;
             case 'r':
+                getRookMoves(p);
                 break;
             case 'b':
+                getBishopMoves(p);
                 break;
             case 'n': 
                 getKnightMoves(p);
@@ -48,6 +52,78 @@ public class RuleManager {
                 System.out.println("Null Move");
             }
         }
+    }
+
+     private void getBishopMoves(Piece p) {
+        //potential multithreading available
+        Coord right = p.position, left = p.position, bottomLeft = p.position, bottomRight = p.position;
+        boolean rightState = true, leftState = true, bottomRightState = true, bottomLeftState = true;
+        for(int i = 0; i < 8; i++) {
+            try {
+                if (rightState) {
+                    Space s = getTopRightMove(right);
+                    rightState = checkPieceTakeable(s, p.color);
+                    right = new Coord(s.XPOS, s.YPOS);
+                }
+            } catch (Exception e) {}
+            try {
+                if (leftState) {
+                    Space s2 = getTopLeftMove(left);
+                    leftState = checkPieceTakeable(s2, p.color);
+                    left = new Coord(s2.XPOS, s2.YPOS);
+                }
+            } catch (Exception e) {}
+            try {
+                if (bottomLeftState) {
+                    Space s = getBottomLeftMove(bottomLeft);
+                    bottomLeftState = checkPieceTakeable(s, p.color);
+                    bottomLeft = new Coord(s.XPOS, s.YPOS);
+                }
+            } catch (Exception e) {}
+            try {
+                if(bottomRightState) {
+                    Space s = getBottomRightMove(bottomRight);
+                    bottomRightState = checkPieceTakeable(s, p.color);
+                    bottomRight = new Coord(s.XPOS, s.YPOS);
+                }
+            } catch (Exception e) {}
+       }
+    }
+
+    private void getRookMoves(Piece p) {
+        Coord right = p.position, left = p.position, bottom = p.position, top = p.position;
+        boolean rightState = true, leftState = true, bottomState = true, topState= true;
+
+        for(int i = 0; i < 7; i++) {
+            try {
+                if (rightState) {
+                    Space s = getRightMove(right);
+                    rightState = checkPieceTakeable(s, p.color);
+                    right = new Coord(s.XPOS, s.YPOS);
+                }
+            } catch (Exception e) {}
+            try {
+                if (leftState) {
+                    Space s2 = getLeftMove(left);
+                    leftState = checkPieceTakeable(s2, p.color);
+                    left = new Coord(s2.XPOS, s2.YPOS);
+                }
+            } catch (Exception e) {}
+            try {
+                if (bottomState) {
+                    Space s = getBottomMove(bottom);
+                    bottomState = checkPieceTakeable(s, p.color);
+                    bottom = new Coord(s.XPOS, s.YPOS);
+                }
+            } catch (Exception e) {}
+            try {
+                if(topState) {
+                    Space s = getTopMove(top);
+                    topState = checkPieceTakeable(s, p.color);
+                    top = new Coord(s.XPOS, s.YPOS);
+                }
+            } catch (Exception e) {}
+       }
     }
 
     public void getPawnMoves(Piece p) {
@@ -151,6 +227,19 @@ public class RuleManager {
             legalMoves.add(new Coord(s.XPOS, s.YPOS));
         }
     }
+
+    private boolean checkPieceTakeable(Space s, int color) {
+        if(s.currentPiece == null ) {
+            legalMoves.add(new Coord(s.XPOS, s.YPOS));
+            return true;
+        }
+        else if(s.currentPiece.color != color) {
+            legalMoves.add(new Coord(s.XPOS, s.YPOS));
+            return false;
+        }
+        else return false;
+    }
+
     private void checkPiecePawnTake(Space s, int originalPieceColor) {
         if(s.currentPiece != null && s.currentPiece.color != originalPieceColor) {
             legalMoves.add(new Coord(s.XPOS, s.YPOS));
