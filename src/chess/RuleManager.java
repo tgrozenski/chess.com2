@@ -16,8 +16,10 @@ public class RuleManager {
             case 'q':
                 break;
             case 'r':
+                getRookMoves(p);
                 break;
             case 'b':
+                getBishopMoves(p);
                 break;
             case 'n': 
                 getKnightMoves(p);
@@ -146,19 +148,98 @@ public class RuleManager {
             System.out.println("Space is null!");
         }
     }
-    private void checkPiece(Space s, int originalPieceColor) {
-        if(s.currentPiece == null || s.currentPiece.color != originalPieceColor) {
-            legalMoves.add(new Coord(s.XPOS, s.YPOS));
+
+    private void getRookMoves(Piece p) {
+        Coord right = p.position, left = p.position, bottom = p.position, top = p.position;
+        boolean rightState = true, leftState = true, bottomState = true, topState= true;
+
+        for(int i = 0; i < 7; i++) {
+            try {
+                if (rightState) {
+                    Space s = getRightMove(right);
+                    rightState = checkPiece(s, p.color);
+                    right = s.position;
+                }
+            } catch (Exception e) {}
+            try {
+                if (leftState) {
+                    Space s2 = getLeftMove(left);
+                    leftState = checkPiece(s2, p.color);
+                    left = s2.position;
+                }
+            } catch (Exception e) {}
+            try {
+                if (bottomState) {
+                    Space s = getBottomMove(bottom);
+                    bottomState = checkPiece(s, p.color);
+                    bottom = s.position;
+                }
+            } catch (Exception e) {}
+            try {
+                if(topState) {
+                    Space s = getTopMove(top);
+                    topState = checkPiece(s, p.color);
+                    top = s.position;
+                }
+            } catch (Exception e) {}
+       }
+    }
+
+    private void getBishopMoves(Piece p) {
+        //potential multithreading available
+        Coord right = p.position, left = p.position, bottomLeft = p.position, bottomRight = p.position;
+        boolean rightState = true, leftState = true, bottomRightState = true, bottomLeftState = true;
+        for(int i = 0; i < 8; i++) {
+            try {
+                if (rightState) {
+                    Space s = getTopRightMove(right);
+                    rightState = checkPiece(s, p.color);
+                    right = s.position;
+                }
+            } catch (Exception e) {}
+            try {
+                if (leftState) {
+                    Space s2 = getTopLeftMove(left);
+                    leftState = checkPiece(s2, p.color);
+                    left = s2.position;
+                }
+            } catch (Exception e) {}
+            try {
+                if (bottomLeftState) {
+                    Space s = getBottomLeftMove(bottomLeft);
+                    bottomLeftState = checkPiece(s, p.color);
+                    bottomLeft = s.position;
+                }
+            } catch (Exception e) {}
+            try {
+                if(bottomRightState) {
+                    Space s = getBottomRightMove(bottomRight);
+                    bottomRightState = checkPiece(s, p.color);
+                    bottomRight = s.position;
+                }
+            } catch (Exception e) {}
+       }
+    }
+    //checks for a valid move on the space provided, returns true if empty false if occupied
+    private Boolean checkPiece(Space s, int originalPieceColor) {
+        if(s.currentPiece == null ) {
+            legalMoves.add(s.position);
+            return true;
         }
+        else if(s.currentPiece.color != originalPieceColor) {
+            legalMoves.add(s.position);
+            return false;
+        }
+        else return false;
     }
     private void checkPiecePawnTake(Space s, int originalPieceColor) {
         if(s.currentPiece != null && s.currentPiece.color != originalPieceColor) {
-            legalMoves.add(new Coord(s.XPOS, s.YPOS));
+            legalMoves.add(s.position);
         }
     }
     private void checkPiecePawnMove(Space s, int originalPieceColor) {
         if(s.currentPiece == null) {
-            legalMoves.add(new Coord(s.XPOS, s.YPOS));
+            legalMoves.add(s.position);
         }
     }
         //TODO AU PASSANT 

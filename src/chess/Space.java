@@ -7,12 +7,10 @@ public class Space {
     public Color spaceColor;
     public Piece currentPiece;
     public String spaceNotation;
-    public int XPOS;
-    public int YPOS;
+    public Coord position;
 
     public Space(Color color, int x, int y) {
-        this.XPOS = y;
-        this.YPOS = x;
+        this.position = new Coord(x, y);
         this.spaceColor = color;
     }
 

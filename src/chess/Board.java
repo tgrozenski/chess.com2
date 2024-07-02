@@ -73,7 +73,7 @@ public class Board {
     public void clearSpace(Graphics g, String notation) {
         Space space = this.getSpace(notation);
         g.setColor(space.spaceColor);
-        g.fillRect(space.YPOS, space.XPOS, spaceWidthLength, spaceWidthLength);
+        g.fillRect(space.position.y, space.position.x, spaceWidthLength, spaceWidthLength);
     }
 
     public int[] getIndexfromCoords(int XPOS, int YPOS) {

@@ -25,7 +25,7 @@ public class Chess {
             @Override
             public void mousePressed(MouseEvent e) {
                 Space touchedSpace = tempBoard.getSpaceFromCoord(new Coord(roundDownNearest100(e.getX()), roundDownNearest100(e.getY())));
-                System.out.println("Pressed " + touchedSpace.XPOS + " " + touchedSpace.YPOS);
+                System.out.println("Pressed " + touchedSpace.position.x+ " " + touchedSpace.position.x);
                 System.out.println(touchedSpace.currentPiece.imagePath);
                 if(touchedSpace.currentPiece != null) {
                     touchedSpace.currentPiece.getLegalMoves().forEach( c -> {
@@ -65,7 +65,7 @@ class MyPanel extends JPanel {
         board.drawSpaces(g);
         String[] startingPosition = {
         "1pa7", "1pb7", "1pc7", "1pd7", "1pe7", "1pf7", "1pg7", "1ph7", "1ra8", "1rh8", "1nb8", "1ng8", "1bc8", "1bf8", "1qd8", "1ke8",
-        "0pa2", "0pb2", "0pc2", "0pd2", "0pe2", "0pf2", "0pg2", "0ph2", "0ra1", "0rh1", "0nb1", "0ng1", "0bc1", "0bf1", "0qd1", "0ke1", "1ne5"
+        "0pa2", "0pb2", "0pc2", "0pd2", "0pe2", "0pf2", "0pg2", "0ph2", "0ra1", "0rh1", "0nb1", "0ng1", "0bc1", "0bf1", "0qd1", "0ke1", "1rd4", "0be4"
         };
 
         for(String str: startingPosition) {
