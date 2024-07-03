@@ -73,7 +73,21 @@ public class Board {
     public void clearSpace(Graphics g, String notation) {
         Space space = this.getSpace(notation);
         g.setColor(space.spaceColor);
-        g.fillRect(space.YPOS, space.XPOS, spaceWidthLength, spaceWidthLength);
+        g.fillRect(space.XPOS, space.YPOS, spaceWidthLength, spaceWidthLength);
+    }
+
+    public void highlightSquare(Graphics g, String notation) {
+        Space space = this.getSpace(notation);
+        g.setColor(highlightColor);
+        g.fillRect(space.XPOS, space.YPOS, spaceWidthLength, spaceWidthLength);
+        if(space.currentPiece != null) {
+            Piece piece = space.currentPiece; 
+            try {
+                Image img = ImageIO.read(Objects.requireNonNull(getClass().getResource(piece.imagePath)));
+                g.drawImage(img, piece.position.x, piece.position.y, null);
+            } catch (Exception e) {}
+            // System.out.println(piece.imagePath + " " + piece.position.x + " " + piece.position.y);
+        }
     }
 
     public int[] getIndexfromCoords(int XPOS, int YPOS) {
