@@ -8,7 +8,6 @@ public class RuleManager {
     private static final int WHITE = 0;
     
     public ArrayList<Coord> getLegalMoves(Piece p) {
-
         switch(p.pieceType) {
             case 'k':
                 getKingMoves(p);
@@ -34,7 +33,6 @@ public class RuleManager {
     }
 
     public void getKnightMoves(Piece p) {
-
         Coord topRight = new Coord(p.position.x + 100, p.position.y - 200);
         Coord topLeft = new Coord(p.position.x - 100, p.position.y - 200);
         Coord bottomRight= new Coord(p.position.x + 100, p.position.y + 200);

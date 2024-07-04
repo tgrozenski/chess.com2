@@ -110,4 +110,17 @@ public class Board {
         int[] indices = getIndexfromCoords(coord.x, coord.y);
         return spacesArr[indices[0]][indices[1]];
     }
+
+    public void setSpaceCurrentPiece(Piece p, Coord c) {
+        int[] indices = getIndexfromCoords(c.x, c.y);
+        spacesArr[indices[0]][indices[1]].currentPiece = p;
+        spacesArr[indices[0]][indices[1]].currentPiece.notation = getNewNotation(p, c);
+        spacesArr[indices[0]][indices[1]].XPOS = c.x;
+        spacesArr[indices[0]][indices[1]].YPOS = c.y;
+        System.out.println("Updated Array: " + indices[0] + " " + indices[1] + " " +  spacesArr[indices[0]][indices[1]].currentPiece.notation);
+    }
+
+    public String getNewNotation(Piece p, Coord dest) {
+        return p.color + "" +  p.pieceType + dest.notation;
+    }
 }

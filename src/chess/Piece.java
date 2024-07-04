@@ -12,6 +12,7 @@ public class Piece {
     // abstract int[] getLegalMoves();
 
     Piece(String notation) {
+        this.notation = notation;
         this.position = notationToCoords(notation);
         this.pieceType = notationtoPieceType(notation);
         this.color = notationtoColor(notation);
