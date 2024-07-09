@@ -1,0 +1,13 @@
+TODO 
+
+- Implement castling for left side (Probably just another if else if piece's x position is on the right or left)
+
+- Implement check
+
+- Implement checkmate
+
+- Implememnt turns
+
+REFACTOR NOTES: 
+
+- Remove get index from coords 

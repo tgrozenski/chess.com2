@@ -47,7 +47,7 @@ public class RuleManager {
             try {
                 checkPiece(board.getSpaceFromCoord(c), p.color);
             } catch (Exception e) {
-                System.out.println("Null Move");
+                // System.out.println("Null Move");
             }
         }
     }
@@ -126,102 +126,121 @@ public class RuleManager {
 
     public void getPawnMoves(Piece p) {
         Coord position = new Coord(p.position.x, p.position.y);
-        System.out.println("POSITION IN GET MOVES: " + position.x + " " + position.y);
+        // System.out.println("POSITION IN GET MOVES: " + position.x + " " + position.y);
         if(p.color == WHITE) {
             try {
                 checkPiecePawnMove(getTopMove(position), p.color);
             } catch (Exception e) {
-                System.out.println("Space is Null");
+                // System.out.println("Space is Null");
             }
             try {
-                if(board.getSpaceFromCoord(new Coord(p.position.x, p.position.y - 100)).currentPiece == null){
+                if(p.position.y == 700){
                     checkPiecePawnMove(getTop2Move(position), p.color);
                 }
             } catch (Exception e) {
-                System.out.println("Space is Null");
+                // System.out.println("Space is Null");
             }
             try {
                 checkPiecePawnTake(getTopLeftMove(position), p.color);
             } catch (Exception e) {
-                System.out.println("Space is Null");
+                // System.out.println("Space is Null");
             }
             try {
                 checkPiecePawnTake(getTopRightMove(position), p.color);
             } catch (Exception e) {
-                System.out.println("Space is Null");
+                // System.out.println("Space is Null");
             }
         }
         else {
             try {
                 checkPiecePawnMove(getBottomMove(position), p.color);
             } catch (Exception e) {
-                System.out.println("Space is Null");
+                // System.out.println("Space is Null");
             }
             try {
-                if(board.getSpaceFromCoord(new Coord(p.position.x, p.position.y + 100)).currentPiece == null){
+                if(p.position.y == 200) {
                     checkPiecePawnMove(getBottom2Move(position), p.color);
                 }
             } catch (Exception e) {
-                System.out.println("Space is Null");
+                // System.out.println("Space is Null");
             }
             try {
                 checkPiecePawnTake(getBottomLeftMove(position), p.color);
             } catch (Exception e) {
-                System.out.println("Space is Null");
+                // System.out.println("Space is Null");
             }
             try {
                 checkPiecePawnTake(getBottomRightMove(position), p.color);
             } catch (Exception e) {
-                System.out.println("Space is Null");
+                // System.out.println("Space is Null");
             }
         }
     }
 
     public void getKingMoves(Piece p) {
-        System.out.println("Piece in King moves " + p.position.x + " " + p.position.y);
+        // System.out.println("Piece in King moves " + p.position.x + " " + p.position.y);
+        System.out.println("Can Casle? " + canCastleLeft(p));
         try {
             checkPiece(getBottomMove(p.position), p.color);
         } catch (Exception e) {
-            System.out.println("Space is null!");
+            // System.out.println("Space is null!");
         }
         try {
             checkPiece(getTopMove(p.position), p.color);
         } catch (Exception e) {
-            System.out.println("Space is null!");
+            // System.out.println("Space is null!");
         }
         try {
             checkPiece(getTopLeftMove(p.position), p.color);
         } catch (Exception e) {
-            System.out.println("Space is null!");
+            // System.out.println("Space is null!");
         }
         try {
             checkPiece(getTopRightMove(p.position), p.color);
         } catch (Exception e) {
-            System.out.println("Space is null!"); 
+            // System.out.println("Space is null!"); 
         }
         try {
             checkPiece(getBottomLeftMove(p.position), p.color);
         } catch (Exception e) {
-            System.out.println("Space is null!");
+            // System.out.println("Space is null!");
         }
         try {
             checkPiece(getBottomRightMove(p.position), p.color);
         } catch (Exception e) {
-            System.out.println("Space is null!"); 
+            // System.out.println("Space is null!"); 
         }
         try {
             checkPiece(getLeftMove(p.position), p.color);
         } catch (Exception e) {
-            System.out.println("Space is null!");
+            // System.out.println("Space is null!");
         }
         try {
             checkPiece(getRightMove(p.position), p.color);
         } catch (Exception e) {
-            System.out.println("Space is null!");
+            // System.out.println("Space is null!");
         }
     }
+
+    private boolean canCastleLeft(Piece p) {
+        Coord currentLoc = p.position;
+        Space right1 = board.getSpaceFromCoord(new Coord(currentLoc.x + 100, currentLoc.y));
+        Space right2 = board.getSpaceFromCoord(new Coord(currentLoc.x + 200, currentLoc.y));
+        Space right3 = board.getSpaceFromCoord(new Coord(currentLoc.x + 300, currentLoc.y));
+        try {
+            if(right1.currentPiece == null && right2.currentPiece == null && right3.currentPiece != null 
+            && right3.currentPiece.pieceType == 'r' && right3.currentPiece.color == p.color) {
+                legalMoves.add(right3.currentPiece.position);
+                return true;
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return false;
+    }
+
     private void checkPiece(Space s, int originalPieceColor) {
-        if(s.currentPiece == null || s.currentPiece.color != originalPieceColor) {
+        if(s.currentPiece == null || s.currentPiece.color != originalPieceColor && s.XPOS <= 800 && s.YPOS >= 100) {
             legalMoves.add(new Coord(s.XPOS, s.YPOS));
         }
     }

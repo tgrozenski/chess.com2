@@ -95,29 +95,31 @@ public class Board {
     }
     
     public Color getColor(String notation) {
-        Piece myPiece = new Piece(notation);
-        int[] indices = getIndexfromCoords(myPiece.position.x, myPiece.position.y);
-        return spacesArr[indices[0]][indices[1]].spaceColor;
+        Piece myPiece = new Piece(notation, false, false);
+        return spacesArr[myPiece.position.indexX][myPiece.position.indexY].spaceColor;
     }
 
     public Space getSpace(String notation) {
-        Piece piece = new Piece(notation);
+        Piece piece = new Piece(notation, false, false);
         int[] indices = getIndexfromCoords(piece.position.x, piece.position.y);
         return spacesArr[indices[0]][indices[1]];
     }
 
     public Space getSpaceFromCoord(Coord coord) {
-        int[] indices = getIndexfromCoords(coord.x, coord.y);
-        return spacesArr[indices[0]][indices[1]];
+        if(coord.x > 800 || coord.y > 800) {
+            return null;
+        }
+        return spacesArr[coord.indexX][coord.indexY];
     }
 
     public void setSpaceCurrentPiece(Piece p, Coord c) {
-        int[] indices = getIndexfromCoords(c.x, c.y);
-        spacesArr[indices[0]][indices[1]].currentPiece = p;
-        spacesArr[indices[0]][indices[1]].currentPiece.notation = getNewNotation(p, c);
-        spacesArr[indices[0]][indices[1]].XPOS = c.x;
-        spacesArr[indices[0]][indices[1]].YPOS = c.y;
-        System.out.println("Updated Array: " + indices[0] + " " + indices[1] + " " +  spacesArr[indices[0]][indices[1]].currentPiece.notation);
+        if(p == null) {
+            spacesArr[c.indexX][c.indexY].currentPiece = null;
+        }
+        else {
+            spacesArr[c.indexX][c.indexY].currentPiece = p;
+            System.out.println("Updated Array: " + c.indexX + " " + c.indexY + " " +  spacesArr[c.indexX][c.indexY].currentPiece.notation);
+        }
     }
 
     public String getNewNotation(Piece p, Coord dest) {

@@ -7,11 +7,14 @@ public class Piece {
     public char pieceType;
     int color;
     public boolean isTaken = false;
+    public boolean hasMoved = false;
     public String imagePath;
 
     // abstract int[] getLegalMoves();
 
-    Piece(String notation) {
+    Piece(String notation, boolean isTaken, boolean hasMoved) {
+        this.hasMoved = hasMoved;
+        this.isTaken = isTaken;
         this.notation = notation;
         this.position = notationToCoords(notation);
         this.pieceType = notationtoPieceType(notation);
