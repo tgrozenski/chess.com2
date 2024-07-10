@@ -15,6 +15,10 @@ public class Chess {
     static Piece lastClickedPiece;
     static int counter;
     static boolean gameActive = false;
+    static boolean whiteCheck = false;
+    static boolean blackCheck = false;
+    static Board tempBoard = new Board();
+    
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> createAndShowGUI());
     }
@@ -43,9 +47,7 @@ public class Chess {
                     counter++;
                     try {
                         board.highlightSquare(g, "00" + c.notation);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
+                    } catch (Exception ex) {ex.printStackTrace();}
                     });
             }
 
@@ -67,7 +69,6 @@ public class Chess {
         };
         panel.setBackground(Color.gray);
 
-        Board tempBoard = new Board();
         panel.addMouseListener( new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -107,31 +108,54 @@ public class Chess {
         }
         return false;
     }
+
+    private static void checkForCheck() {
+        legalMoves.forEach( c -> {
+            try {
+                // legalMoves = latestPiece.getLegalMoves(false);
+                // System.out.println("Check for check called! " + latestPiece.notation);
+                if(tempBoard.getSpaceFromCoord(c).currentPiece.pieceType == 'k') {
+                    System.out.println("IN CHECK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                }
+            } catch (Exception ex) {}
+        });
+    }
+
     private static void handleTouchEvent(JPanel panel, Board tempBoard, MouseEvent e) {
         counter = 1;
         Space touchedSpace = tempBoard.getSpaceFromCoord(new Coord(roundDownNearest100(e.getX()), roundDownNearest100(e.getY())));
         Coord touchedCoord = new Coord(touchedSpace.XPOS, touchedSpace.YPOS);
 
         if(lastClickedPiece != null  && validateMove(touchedCoord)) {
-            // System.out.println("VALID MOVE DETECTED Current Clicked " + lastClickedPiece.notation);
             Piece target = tempBoard.getSpaceFromCoord(touchedCoord).currentPiece; 
+            //castling
             if(target!= null && target.color == lastClickedPiece.color) {
+                Coord newKing = null, newRook = null;
+                Piece king, rook;
+                if (target.position.x == 800) {
+                    newKing = new Coord(lastClickedPiece.position.x + 200, lastClickedPiece.position.y);
+                    newRook = new Coord(target.position.x - 200, target.position.y);
+                } else if(target.position.x == 100){
+                    newKing = new Coord(lastClickedPiece.position.x - 200, lastClickedPiece.position.y);
+                    newRook = new Coord(target.position.x + 300, target.position.y);
+                }
 
-                Coord newKing = new Coord(lastClickedPiece.position.x + 200, lastClickedPiece.position.y);
-                Coord newRook = new Coord(target.position.x - 200, target.position.y);
-                Piece king = new Piece(lastClickedPiece.color + "" + lastClickedPiece.pieceType + "" + newKing.notation, false , false);
-                Piece rook = new Piece(target.color + "" + target.pieceType + "" + newRook.notation, false , false);
-
+                king = new Piece(lastClickedPiece.color + "" + lastClickedPiece.pieceType + "" + newKing.notation, false , true);
+                rook = new Piece(target.color + "" + target.pieceType + "" + newRook.notation, false , true);
+                king.hasMoved = true;
+                rook.hasMoved = true;
                 //set Old spaces to null and new to proper values
                 tempBoard.setSpaceCurrentPiece(null, target.position);
                 tempBoard.setSpaceCurrentPiece(null, lastClickedPiece.position);
-                tempBoard.setSpaceCurrentPiece(king, newKing);
-                tempBoard.setSpaceCurrentPiece(rook, newRook);
 
-                boardPosition.remove(target.notation);
-                boardPosition.remove(lastClickedPiece.notation);
-                boardPosition.put(king.notation, king);
-                boardPosition.put(rook.notation, rook);
+                try {
+                    tempBoard.setSpaceCurrentPiece(king, newKing);
+                    tempBoard.setSpaceCurrentPiece(rook, newRook);
+                    boardPosition.remove(target.notation);
+                    boardPosition.remove(lastClickedPiece.notation);
+                    boardPosition.put(king.notation, king);
+                    boardPosition.put(rook.notation, rook);
+                } catch (Exception except) {except.printStackTrace();}
 
                 legalMoves.clear();
                 lastClickedPiece = null;
@@ -140,8 +164,11 @@ public class Chess {
             }
             else {
                 System.out.println("Standard Move Detected");
+                // checkForCheck();
+
                 String newNotation = tempBoard.getNewNotation(lastClickedPiece, touchedCoord);
-                Piece newPiece = new Piece(newNotation, false, false);
+                Piece newPiece = new Piece(newNotation, false, true);
+                newPiece.hasMoved = true;
                 Piece previousPiece = tempBoard.getSpaceFromCoord(touchedCoord).currentPiece;
 
                 boardPosition.remove(lastClickedPiece.notation);
@@ -151,6 +178,7 @@ public class Chess {
 
                 legalMoves.clear();
                 lastClickedPiece = null;
+                // latestPiece = newPiece;
                 panel.repaint();
             }
         }
@@ -164,7 +192,14 @@ public class Chess {
             System.out.println("user is clicking a piece for the first time");
             try {
                 lastClickedPiece = touchedSpace.currentPiece;
-                legalMoves = touchedSpace.currentPiece.getLegalMoves();
+                if(whiteCheck && touchedSpace.currentPiece.color == 0 || blackCheck && touchedSpace.currentPiece.color == 0) {
+                    if(touchedSpace.currentPiece.pieceType == 'k') {
+                        legalMoves = touchedSpace.currentPiece.getLegalMoves(true);
+                    }
+                }
+                else {
+                    legalMoves = touchedSpace.currentPiece.getLegalMoves(false);
+                }
                 System.out.println("CURRENT CLICKED PIECE: " + lastClickedPiece.notation);
             } catch (Exception ex) {ex.printStackTrace();};
             panel.repaint();

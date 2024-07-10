@@ -37,9 +37,9 @@ public class Piece {
         return Integer.parseInt(notation.charAt(0) + "");
     }
 
-    public ArrayList<Coord> getLegalMoves() {
+    public ArrayList<Coord> getLegalMoves(boolean check) {
         RuleManager rm = new RuleManager();
-        ArrayList<Coord> arr = rm.getLegalMoves(this);
+        ArrayList<Coord> arr = rm.getLegalMoves(this, check);
         return arr;
     }
 

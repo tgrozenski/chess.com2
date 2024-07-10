@@ -1,12 +1,19 @@
 TODO 
 
-- Implement castling for left side (Probably just another if else if piece's x position is on the right or left)
+PHASE 1 Complete game as an over the board game
+
+- Implement AU passant 
+
+PHASE 2 Enforce the rules of Chess
 
 - Implement check
+
+- Pieces from moving to put the king in check
 
 - Implement checkmate
 
 - Implememnt turns
+
 
 REFACTOR NOTES: 
 

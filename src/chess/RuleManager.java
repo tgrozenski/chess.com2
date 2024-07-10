@@ -7,10 +7,10 @@ public class RuleManager {
     private Board board = new Board();
     private static final int WHITE = 0;
     
-    public ArrayList<Coord> getLegalMoves(Piece p) {
+    public ArrayList<Coord> getLegalMoves(Piece p, boolean check) {
         switch(p.pieceType) {
             case 'k':
-                getKingMoves(p);
+                getKingMoves(p, check);
                 break;
             case 'q':
                 getBishopMoves(p);
@@ -130,56 +130,43 @@ public class RuleManager {
         if(p.color == WHITE) {
             try {
                 checkPiecePawnMove(getTopMove(position), p.color);
-            } catch (Exception e) {
-                // System.out.println("Space is Null");
-            }
+            } catch (Exception e) {}
             try {
-                if(p.position.y == 700){
+                if(!p.hasMoved && getTopMove(position).currentPiece == null){
                     checkPiecePawnMove(getTop2Move(position), p.color);
                 }
-            } catch (Exception e) {
-                // System.out.println("Space is Null");
-            }
+            } catch (Exception e) {}
             try {
                 checkPiecePawnTake(getTopLeftMove(position), p.color);
-            } catch (Exception e) {
-                // System.out.println("Space is Null");
-            }
+            } catch (Exception e) {}
             try {
                 checkPiecePawnTake(getTopRightMove(position), p.color);
-            } catch (Exception e) {
-                // System.out.println("Space is Null");
-            }
+            } catch (Exception e) {}
         }
         else {
             try {
                 checkPiecePawnMove(getBottomMove(position), p.color);
-            } catch (Exception e) {
-                // System.out.println("Space is Null");
-            }
+            } catch (Exception e) {}
             try {
-                if(p.position.y == 200) {
+                if(!p.hasMoved && getBottomMove(position).currentPiece == null) {
                     checkPiecePawnMove(getBottom2Move(position), p.color);
                 }
-            } catch (Exception e) {
-                // System.out.println("Space is Null");
-            }
+            } catch (Exception e) {}
             try {
                 checkPiecePawnTake(getBottomLeftMove(position), p.color);
-            } catch (Exception e) {
-                // System.out.println("Space is Null");
-            }
+            } catch (Exception e) {}
             try {
                 checkPiecePawnTake(getBottomRightMove(position), p.color);
-            } catch (Exception e) {
-                // System.out.println("Space is Null");
-            }
+            } catch (Exception e) {}
         }
     }
 
-    public void getKingMoves(Piece p) {
+    public void getKingMoves(Piece p, boolean check) {
         // System.out.println("Piece in King moves " + p.position.x + " " + p.position.y);
-        System.out.println("Can Casle? " + canCastleLeft(p));
+        if(!check) {
+            System.out.println("Can Castle Right? " + canCastleLeft(p));
+            System.out.println("Can Castle left? " + canCastleRight(p));
+        }
         try {
             checkPiece(getBottomMove(p.position), p.color);
         } catch (Exception e) {
@@ -224,10 +211,34 @@ public class RuleManager {
 
     private boolean canCastleLeft(Piece p) {
         Coord currentLoc = p.position;
-        Space right1 = board.getSpaceFromCoord(new Coord(currentLoc.x + 100, currentLoc.y));
-        Space right2 = board.getSpaceFromCoord(new Coord(currentLoc.x + 200, currentLoc.y));
-        Space right3 = board.getSpaceFromCoord(new Coord(currentLoc.x + 300, currentLoc.y));
+        if(p.hasMoved) {
+            return false;
+        }
         try {
+            Space left1 = board.getSpaceFromCoord(new Coord(currentLoc.x - 100, currentLoc.y));
+            Space left2 = board.getSpaceFromCoord(new Coord(currentLoc.x - 200, currentLoc.y));
+            Space left3 = board.getSpaceFromCoord(new Coord(currentLoc.x - 300, currentLoc.y));
+            Space left4 = board.getSpaceFromCoord(new Coord(currentLoc.x - 400, currentLoc.y));
+            if(left1.currentPiece == null && left2.currentPiece == null && left3.currentPiece == null 
+            && left4.currentPiece.pieceType == 'r' && left4.currentPiece.color == p.color) {
+                legalMoves.add(left4.currentPiece.position);
+                return true;
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return false;
+    }
+    
+    private boolean canCastleRight(Piece p) {
+        Coord currentLoc = p.position;
+        if(p.hasMoved) {
+            return false;
+        }
+        try {
+            Space right1 = board.getSpaceFromCoord(new Coord(currentLoc.x + 100, currentLoc.y));
+            Space right2 = board.getSpaceFromCoord(new Coord(currentLoc.x + 200, currentLoc.y));
+            Space right3 = board.getSpaceFromCoord(new Coord(currentLoc.x + 300, currentLoc.y));
             if(right1.currentPiece == null && right2.currentPiece == null && right3.currentPiece != null 
             && right3.currentPiece.pieceType == 'r' && right3.currentPiece.color == p.color) {
                 legalMoves.add(right3.currentPiece.position);
@@ -267,6 +278,9 @@ public class RuleManager {
             legalMoves.add(new Coord(s.XPOS, s.YPOS));
         }
     }
+
+
+
         //TODO AU PASSANT 
         //When move is implemented keep a registry with last piece moved
         //Check this to determine if Au passant is a move
