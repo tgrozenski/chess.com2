@@ -4,6 +4,7 @@ public class Coord {
     public int x;
     public int y;
     public int indexX;
+    public boolean highlight = true;
     public int indexY;
     String notation;
 

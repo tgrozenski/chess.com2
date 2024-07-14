@@ -6,8 +6,11 @@ public class RuleManager {
     private ArrayList<Coord> legalMoves = new ArrayList<>();
     private Board board = new Board();
     private static final int WHITE = 0;
+    private boolean highlightState;
     
-    public ArrayList<Coord> getLegalMoves(Piece p, boolean check) {
+    public ArrayList<Coord> getLegalMoves(Piece p, boolean check, boolean highlight) {
+        // System.out.println("IN CHECK?" + checkForCheck(p));
+        this.highlightState = highlight;
         switch(p.pieceType) {
             case 'k':
                 getKingMoves(p, check);
@@ -27,7 +30,13 @@ public class RuleManager {
                 break;
             case 'p':
                 getPawnMoves(p);
+                auPassante(p);                
                 break;
+        }
+        if(!highlightState)  {
+            for(Coord c: legalMoves ) {
+                c.highlight = false;
+            }
         }
         return legalMoves;
     }
@@ -254,6 +263,30 @@ public class RuleManager {
         if(s.currentPiece == null || s.currentPiece.color != originalPieceColor && s.XPOS <= 800 && s.YPOS >= 100) {
             legalMoves.add(new Coord(s.XPOS, s.YPOS));
         }
+    }
+
+    private void auPassante(Piece p) {
+        Coord currentLoc = p.position;
+        Space right = board.getSpaceFromCoord(new Coord(currentLoc.x + 100, currentLoc.y));
+        Space left = board.getSpaceFromCoord(new Coord(currentLoc.x - 100, currentLoc.y));
+        try {
+            if (right.currentPiece!= null && right.currentPiece.color != p.color) {
+                System.out.println("Can Take Au Passante right " + right.currentPiece.notation);
+            }
+            else if (left.currentPiece!= null && left.currentPiece.color != p.color) {
+                System.out.println("Can Take Au Passante left" + left.currentPiece.notation);
+            }
+            else {
+                System.out.println("No Au Passante");
+            }
+        } catch (Exception e) {}
+    }
+
+    private void validateForKing(Piece King) {
+        //checks whether or not move will put king in check
+        //store piece in a temporary variable
+        //set its currents space's piece to null
+        //
     }
 
     private boolean checkPieceTakeable(Space s, int color) {

@@ -5,7 +5,8 @@ public class Piece {
     public String notation; 
     public Coord position;
     public char pieceType;
-    int color;
+    public int color;
+    public int moveCount = 0;
     public boolean isTaken = false;
     public boolean hasMoved = false;
     public String imagePath;
@@ -37,9 +38,9 @@ public class Piece {
         return Integer.parseInt(notation.charAt(0) + "");
     }
 
-    public ArrayList<Coord> getLegalMoves(boolean check) {
+    public ArrayList<Coord> getLegalMoves(boolean check, boolean highlight) {
         RuleManager rm = new RuleManager();
-        ArrayList<Coord> arr = rm.getLegalMoves(this, check);
+        ArrayList<Coord> arr = rm.getLegalMoves(this, check, highlight);
         return arr;
     }
 

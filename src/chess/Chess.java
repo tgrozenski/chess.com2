@@ -45,9 +45,11 @@ public class Chess {
                     legalMoves.forEach( c -> {
                     // System.out.println("Legal Moves " + c.x + " " + c.y + " " + c.notation + " Count:  " + counter);
                     counter++;
-                    try {
-                        board.highlightSquare(g, "00" + c.notation);
-                    } catch (Exception ex) {ex.printStackTrace();}
+                    if (c.highlight == true) {
+                        try {
+                            board.highlightSquare(g, "00" + c.notation);
+                        } catch (Exception ex) {ex.printStackTrace();}
+                    }
                     });
             }
 
@@ -109,16 +111,13 @@ public class Chess {
         return false;
     }
 
-    private static void checkForCheck() {
-        legalMoves.forEach( c -> {
-            try {
-                // legalMoves = latestPiece.getLegalMoves(false);
-                // System.out.println("Check for check called! " + latestPiece.notation);
-                if(tempBoard.getSpaceFromCoord(c).currentPiece.pieceType == 'k') {
-                    System.out.println("IN CHECK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                }
-            } catch (Exception ex) {}
-        });
+    public Piece getPieceFromBoard(Piece p) {
+        for(Piece current: boardPosition.values()) {
+            if(current.color == p.color && current.pieceType == 'k') {
+                return current;
+            }
+        }
+        return null;
     }
 
     private static void handleTouchEvent(JPanel panel, Board tempBoard, MouseEvent e) {
@@ -164,7 +163,6 @@ public class Chess {
             }
             else {
                 System.out.println("Standard Move Detected");
-                // checkForCheck();
 
                 String newNotation = tempBoard.getNewNotation(lastClickedPiece, touchedCoord);
                 Piece newPiece = new Piece(newNotation, false, true);
@@ -177,6 +175,7 @@ public class Chess {
                 tempBoard.setSpaceCurrentPiece(newPiece, touchedCoord);
 
                 legalMoves.clear();
+                checkForCheck(newPiece);
                 lastClickedPiece = null;
                 // latestPiece = newPiece;
                 panel.repaint();
@@ -192,17 +191,39 @@ public class Chess {
             System.out.println("user is clicking a piece for the first time");
             try {
                 lastClickedPiece = touchedSpace.currentPiece;
-                if(whiteCheck && touchedSpace.currentPiece.color == 0 || blackCheck && touchedSpace.currentPiece.color == 0) {
-                    if(touchedSpace.currentPiece.pieceType == 'k') {
-                        legalMoves = touchedSpace.currentPiece.getLegalMoves(true);
-                    }
-                }
-                else {
-                    legalMoves = touchedSpace.currentPiece.getLegalMoves(false);
-                }
+                legalMoves = touchedSpace.currentPiece.getLegalMoves(false, true);
+
+                // if(whiteCheck && touchedSpace.currentPiece.color == 0 || blackCheck && touchedSpace.currentPiece.color == 0) {
+                //     if(touchedSpace.currentPiece.pieceType == 'k') {
+                //         legalMoves = touchedSpace.currentPiece.getLegalMoves(true, true);
+                //     }
+                // }
+                // else {
+                //     legalMoves = touchedSpace.currentPiece.getLegalMoves(false, true);
+                // }
                 System.out.println("CURRENT CLICKED PIECE: " + lastClickedPiece.notation);
             } catch (Exception ex) {ex.printStackTrace();};
             panel.repaint();
         }
+    }
+    public static void checkForCheck(Piece p) {
+       System.out.println("CHECKING FOR CHECK " + p.notation);
+       legalMoves = p.getLegalMoves(false, false);
+       for(Coord c: legalMoves) {
+        try {
+            Piece current = tempBoard.getSpaceFromCoord(c).currentPiece;
+           if(current.pieceType == 'k') {
+                if(current.color == 0) {
+                    whiteCheck = true;
+                    System.out.println("WHITE IN CHECK ");
+                }
+                else {
+                    blackCheck= true;
+                    System.out.println("BLACK IN CHECK ");
+                }
+           }
+        } catch (Exception e) {}
+       }
+    legalMoves.clear();
     }
 }
