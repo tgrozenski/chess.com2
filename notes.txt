@@ -2,11 +2,14 @@ TODO
 
 PHASE 1 Complete game as an over the board game
 
-- Implement AU passant 
 
 PHASE 2 Enforce the rules of Chess
 
-- Implement check
+- Restrict moves that do not block check
+
+- Restrict moves that put king in check
+
+- Implement AU passant 
 
 - Pieces from moving to put the king in check
 

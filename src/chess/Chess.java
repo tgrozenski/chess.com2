@@ -192,15 +192,6 @@ public class Chess {
             try {
                 lastClickedPiece = touchedSpace.currentPiece;
                 legalMoves = touchedSpace.currentPiece.getLegalMoves(false, true);
-
-                // if(whiteCheck && touchedSpace.currentPiece.color == 0 || blackCheck && touchedSpace.currentPiece.color == 0) {
-                //     if(touchedSpace.currentPiece.pieceType == 'k') {
-                //         legalMoves = touchedSpace.currentPiece.getLegalMoves(true, true);
-                //     }
-                // }
-                // else {
-                //     legalMoves = touchedSpace.currentPiece.getLegalMoves(false, true);
-                // }
                 System.out.println("CURRENT CLICKED PIECE: " + lastClickedPiece.notation);
             } catch (Exception ex) {ex.printStackTrace();};
             panel.repaint();

@@ -1,5 +1,6 @@
 package chess;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class RuleManager {
 
@@ -172,6 +173,21 @@ public class RuleManager {
 
     public void getKingMoves(Piece p, boolean check) {
         // System.out.println("Piece in King moves " + p.position.x + " " + p.position.y);
+        Chess chess = new Chess();
+        HashMap<String, Piece> boardPosition = chess.boardPosition;
+        ArrayList<Coord> restrictedMoves = new ArrayList<>();
+        for (Piece piece: boardPosition.values()) {
+            if(piece.color != p.color)  {
+                System.out.println(piece.notation);
+                for (Coord coord : piece.getLegalMoves(false, false)) {
+                   System.out.println(piece.notation); 
+                }
+                // restrictedMoves.addAll(piece.getLegalMoves(false, false));
+           }
+        }
+        // for (Coord coord : restrictedMoves) {
+        //    System.out.println("RESTRICTED MOVE " + coord.notation); 
+        // }
         if(!check) {
             System.out.println("Can Castle Right? " + canCastleLeft(p));
             System.out.println("Can Castle left? " + canCastleRight(p));
@@ -228,7 +244,8 @@ public class RuleManager {
             Space left2 = board.getSpaceFromCoord(new Coord(currentLoc.x - 200, currentLoc.y));
             Space left3 = board.getSpaceFromCoord(new Coord(currentLoc.x - 300, currentLoc.y));
             Space left4 = board.getSpaceFromCoord(new Coord(currentLoc.x - 400, currentLoc.y));
-            if(left1.currentPiece == null && left2.currentPiece == null && left3.currentPiece == null 
+
+            if (left1.currentPiece == null && left2.currentPiece == null && left3.currentPiece == null 
             && left4.currentPiece.pieceType == 'r' && left4.currentPiece.color == p.color) {
                 legalMoves.add(left4.currentPiece.position);
                 return true;
@@ -262,6 +279,14 @@ public class RuleManager {
     private void checkPiece(Space s, int originalPieceColor) {
         if(s.currentPiece == null || s.currentPiece.color != originalPieceColor && s.XPOS <= 800 && s.YPOS >= 100) {
             legalMoves.add(new Coord(s.XPOS, s.YPOS));
+        }
+    }
+    public boolean validateCoord(Coord c) {
+        if(c.x > 800 || c.x < 100 || c.y > 800 || c.y < 100) {
+            return false;
+        }
+        else {
+            return true;
         }
     }
 
