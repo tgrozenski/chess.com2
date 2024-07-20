@@ -54,47 +54,46 @@ public class RuleManager {
         Coord[] arr = { topLeft, topRight, bottomRight, bottomLeft, middleLeftA, middleLeftB, middleRightA, middleRightB }; 
 
         for(Coord c: arr) {
-            try {
+            if(board.getSpaceFromCoord(c) != null) {
                 checkPiece(board.getSpaceFromCoord(c), p.color);
-            } catch (Exception e) {
-                // System.out.println("Null Move");
+                System.out.println(c.notation);
             }
         }
     }
 
-     private void getBishopMoves(Piece p) {
+    private void getBishopMoves(Piece p) {
         //potential multithreading available
         Coord right = p.position, left = p.position, bottomLeft = p.position, bottomRight = p.position;
         boolean rightState = true, leftState = true, bottomRightState = true, bottomLeftState = true;
         for(int i = 0; i < 8; i++) {
-            try {
-                if (rightState) {
-                    Space s = getTopRightMove(right);
-                    rightState = checkPieceTakeable(s, p.color);
-                    right = new Coord(s.XPOS, s.YPOS);
+            if (rightState) {
+                Space s = getTopRightMove(right);
+                if(s != null) {
+                rightState = checkPieceTakeable(s, p.color); 
+                right = new Coord(s.XPOS, s.YPOS);
                 }
-            } catch (Exception e) {}
-            try {
-                if (leftState) {
-                    Space s2 = getTopLeftMove(left);
-                    leftState = checkPieceTakeable(s2, p.color);
-                    left = new Coord(s2.XPOS, s2.YPOS);
+            }
+            if (leftState) {
+                Space s2 = getTopLeftMove(left);
+                if(s2 != null) {
+                leftState = checkPieceTakeable(s2, p.color);
+                left = new Coord(s2.XPOS, s2.YPOS);
                 }
-            } catch (Exception e) {}
-            try {
-                if (bottomLeftState) {
-                    Space s = getBottomLeftMove(bottomLeft);
-                    bottomLeftState = checkPieceTakeable(s, p.color);
-                    bottomLeft = new Coord(s.XPOS, s.YPOS);
+            }
+            if (bottomLeftState) {
+                Space s = getBottomLeftMove(bottomLeft);
+                if(s != null) {
+                bottomLeftState = checkPieceTakeable(s, p.color); 
+                bottomLeft = new Coord(s.XPOS, s.YPOS);
                 }
-            } catch (Exception e) {}
-            try {
-                if(bottomRightState) {
-                    Space s = getBottomRightMove(bottomRight);
-                    bottomRightState = checkPieceTakeable(s, p.color);
-                    bottomRight = new Coord(s.XPOS, s.YPOS);
-                }
-            } catch (Exception e) {}
+            }
+            if(bottomRightState) {
+                Space s = getBottomRightMove(bottomRight);
+                if(s != null) {
+                bottomRightState = checkPieceTakeable(s, p.color);
+                bottomRight = new Coord(s.XPOS, s.YPOS);
+            }
+        }
        }
     }
 
@@ -103,34 +102,34 @@ public class RuleManager {
         boolean rightState = true, leftState = true, bottomState = true, topState= true;
 
         for(int i = 0; i < 7; i++) {
-            try {
-                if (rightState) {
-                    Space s = getRightMove(right);
+            if (rightState) {
+                Space s = getRightMove(right);
+                if(s != null) {
                     rightState = checkPieceTakeable(s, p.color);
                     right = new Coord(s.XPOS, s.YPOS);
                 }
-            } catch (Exception e) {}
-            try {
-                if (leftState) {
-                    Space s2 = getLeftMove(left);
+            }
+            if (leftState) {
+                Space s2 = getLeftMove(left);
+                if(s2 != null) {
                     leftState = checkPieceTakeable(s2, p.color);
                     left = new Coord(s2.XPOS, s2.YPOS);
                 }
-            } catch (Exception e) {}
-            try {
-                if (bottomState) {
-                    Space s = getBottomMove(bottom);
+            }
+            if (bottomState) {
+                Space s = getBottomMove(bottom);
+                if(s!=null) {
                     bottomState = checkPieceTakeable(s, p.color);
                     bottom = new Coord(s.XPOS, s.YPOS);
                 }
-            } catch (Exception e) {}
-            try {
-                if(topState) {
-                    Space s = getTopMove(top);
+            }
+            if(topState) {
+                Space s = getTopMove(top);
+                if(s!= null) {
                     topState = checkPieceTakeable(s, p.color);
                     top = new Coord(s.XPOS, s.YPOS);
                 }
-            } catch (Exception e) {}
+            }
        }
     }
 
@@ -138,100 +137,38 @@ public class RuleManager {
         Coord position = new Coord(p.position.x, p.position.y);
         // System.out.println("POSITION IN GET MOVES: " + position.x + " " + position.y);
         if(p.color == WHITE) {
-            try {
-                checkPiecePawnMove(getTopMove(position), p.color);
-            } catch (Exception e) {}
-            try {
-                if(!p.hasMoved && getTopMove(position).currentPiece == null){
-                    checkPiecePawnMove(getTop2Move(position), p.color);
-                }
-            } catch (Exception e) {}
-            try {
-                checkPiecePawnTake(getTopLeftMove(position), p.color);
-            } catch (Exception e) {}
-            try {
-                checkPiecePawnTake(getTopRightMove(position), p.color);
-            } catch (Exception e) {}
+            checkPiecePawnMove(getTopMove(position), p.color);
+            checkPiecePawnMove(getTop2Move(position), p.color);
+            checkPiecePawnTake(getTopLeftMove(position), p.color);
+            checkPiecePawnTake(getTopRightMove(position), p.color);
         }
         else {
-            try {
-                checkPiecePawnMove(getBottomMove(position), p.color);
-            } catch (Exception e) {}
-            try {
-                if(!p.hasMoved && getBottomMove(position).currentPiece == null) {
-                    checkPiecePawnMove(getBottom2Move(position), p.color);
-                }
-            } catch (Exception e) {}
-            try {
-                checkPiecePawnTake(getBottomLeftMove(position), p.color);
-            } catch (Exception e) {}
-            try {
-                checkPiecePawnTake(getBottomRightMove(position), p.color);
-            } catch (Exception e) {}
+            checkPiecePawnMove(getBottomMove(position), p.color);
+            if(!p.hasMoved && getBottomMove(position).currentPiece == null) {
+                checkPiecePawnMove(getBottom2Move(position), p.color);
+            }
+            checkPiecePawnTake(getBottomLeftMove(position), p.color);
+            checkPiecePawnTake(getBottomRightMove(position), p.color);
         }
     }
 
     public void getKingMoves(Piece p, boolean check) {
         // System.out.println("Piece in King moves " + p.position.x + " " + p.position.y);
-        Chess chess = new Chess();
-        HashMap<String, Piece> boardPosition = chess.boardPosition;
-        ArrayList<Coord> restrictedMoves = new ArrayList<>();
-        for (Piece piece: boardPosition.values()) {
-            if(piece.color != p.color)  {
-                System.out.println(piece.notation);
-                for (Coord coord : piece.getLegalMoves(false, false)) {
-                   System.out.println(piece.notation); 
-                }
-                // restrictedMoves.addAll(piece.getLegalMoves(false, false));
-           }
-        }
-        // for (Coord coord : restrictedMoves) {
-        //    System.out.println("RESTRICTED MOVE " + coord.notation); 
-        // }
+        GameState gs = new GameState();
+        HashMap<String, Piece> boardPosition = gs.getBoardPosition();
+        ArrayList<Coord> restrictedMoves;
         if(!check) {
             System.out.println("Can Castle Right? " + canCastleLeft(p));
             System.out.println("Can Castle left? " + canCastleRight(p));
         }
-        try {
             checkPiece(getBottomMove(p.position), p.color);
-        } catch (Exception e) {
-            // System.out.println("Space is null!");
-        }
-        try {
             checkPiece(getTopMove(p.position), p.color);
-        } catch (Exception e) {
-            // System.out.println("Space is null!");
-        }
-        try {
             checkPiece(getTopLeftMove(p.position), p.color);
-        } catch (Exception e) {
-            // System.out.println("Space is null!");
-        }
-        try {
             checkPiece(getTopRightMove(p.position), p.color);
-        } catch (Exception e) {
-            // System.out.println("Space is null!"); 
-        }
-        try {
             checkPiece(getBottomLeftMove(p.position), p.color);
-        } catch (Exception e) {
-            // System.out.println("Space is null!");
-        }
-        try {
             checkPiece(getBottomRightMove(p.position), p.color);
-        } catch (Exception e) {
-            // System.out.println("Space is null!"); 
-        }
-        try {
             checkPiece(getLeftMove(p.position), p.color);
-        } catch (Exception e) {
-            // System.out.println("Space is null!");
-        }
-        try {
             checkPiece(getRightMove(p.position), p.color);
-        } catch (Exception e) {
-            // System.out.println("Space is null!");
-        }
     }
 
     private boolean canCastleLeft(Piece p) {
@@ -276,77 +213,86 @@ public class RuleManager {
         return false;
     }
 
-    private void checkPiece(Space s, int originalPieceColor) {
-        if(s.currentPiece == null || s.currentPiece.color != originalPieceColor && s.XPOS <= 800 && s.YPOS >= 100) {
-            legalMoves.add(new Coord(s.XPOS, s.YPOS));
-        }
-    }
-    public boolean validateCoord(Coord c) {
-        if(c.x > 800 || c.x < 100 || c.y > 800 || c.y < 100) {
-            return false;
-        }
-        else {
-            return true;
-        }
-    }
-
     private void auPassante(Piece p) {
         Coord currentLoc = p.position;
         Space right = board.getSpaceFromCoord(new Coord(currentLoc.x + 100, currentLoc.y));
         Space left = board.getSpaceFromCoord(new Coord(currentLoc.x - 100, currentLoc.y));
-        try {
-            if (right.currentPiece!= null && right.currentPiece.color != p.color) {
-                System.out.println("Can Take Au Passante right " + right.currentPiece.notation);
+        GameState gs = new GameState();
+        Piece previousMovedPiece = gs.getPreviousMovedPiece();
+
+        if(right != null && right.currentPiece!= null && right.currentPiece.pieceType == p.pieceType && right.currentPiece.moveCount == 1){
+            System.out.println("Found a match! on the Right");
+            if(previousMovedPiece!= null && previousMovedPiece.notation == right.currentPiece.notation) {
+                System.out.println("Match is valid");
+                legalMoves.add(new Coord(right.XPOS, right.YPOS));
             }
-            else if (left.currentPiece!= null && left.currentPiece.color != p.color) {
-                System.out.println("Can Take Au Passante left" + left.currentPiece.notation);
+        }
+        else if(left!= null && left.currentPiece!= null && left.currentPiece.pieceType == p.pieceType && left.currentPiece.moveCount == 1){
+            System.out.println("Found a match! on the Left");
+            if(previousMovedPiece!= null && previousMovedPiece.notation == left.currentPiece.notation) {
+                System.out.println("Match is valid");
+                legalMoves.add(new Coord(left.XPOS, left.YPOS));
             }
-            else {
-                System.out.println("No Au Passante");
-            }
-        } catch (Exception e) {}
+        }
+        else {
+            System.out.println("No Match");
+        }
     }
 
-    private void validateForKing(Piece King) {
+    private void validateForKing(Piece p) {
         //checks whether or not move will put king in check
-        //store piece in a temporary variable
-        //set its currents space's piece to null
-        //
+        //if p.pieceType == 'k'
+        //check algorithmically if new target position is in any line of fire
+        //check for pawns in top quadrants
+        //check for knight in all possible night spaces
+        // check for rooks and queens on the diagonal, check for bishops and rooks
+        //checks if any pieces of the opposite color
+        //else p.pieceType not 'k'
+        //check if pinned
+        //if pinned no legal moves
     }
 
     private boolean checkPieceTakeable(Space s, int color) {
-        if(s.currentPiece == null ) {
+        if(s != null && s.currentPiece == null ) {
             legalMoves.add(new Coord(s.XPOS, s.YPOS));
             return true;
         }
-        else if(s.currentPiece.color != color) {
+        else if(s != null &&s.currentPiece.color != color) {
             legalMoves.add(new Coord(s.XPOS, s.YPOS));
             return false;
         }
         else return false;
     }
 
+    private void checkPiece(Space s, int originalPieceColor) {
+        if(s != null && s.currentPiece != null && s.currentPiece.color != originalPieceColor && s.XPOS <= 800 && s.YPOS >= 100) {
+            legalMoves.add(new Coord(s.XPOS, s.YPOS));
+        }
+        else if(s!= null && s.currentPiece == null)  {
+            legalMoves.add(new Coord(s.XPOS, s.YPOS));
+        }
+    }
+
     private void checkPiecePawnTake(Space s, int originalPieceColor) {
-        if(s.currentPiece != null && s.currentPiece.color != originalPieceColor) {
+        if(s!= null && s.currentPiece != null && s.currentPiece.color != originalPieceColor) {
             legalMoves.add(new Coord(s.XPOS, s.YPOS));
         }
     }
     private void checkPiecePawnMove(Space s, int originalPieceColor) {
-        if(s.currentPiece == null) {
+        if(s!= null && s.currentPiece == null) {
             legalMoves.add(new Coord(s.XPOS, s.YPOS));
         }
     }
 
+    //TODO AU PASSANT 
+    //When move is implemented keep a registry with last piece moved
+    //Check this to determine if Au passant is a move
+    //Pawn can take au PASSANT if pawn moved by two squares next to it on the left or right
+    // top == -  
+    //bottom == + 
+    //left == -
+    //right == + 
 
-
-        //TODO AU PASSANT 
-        //When move is implemented keep a registry with last piece moved
-        //Check this to determine if Au passant is a move
-        //Pawn can take au PASSANT if pawn moved by two squares next to it on the left or right
-        // top == -  
-        //bottom == + 
-        //left == -
-        //right == + 
     private Space getBottomRightMove(Coord cord) { return board.getSpaceFromCoord(new Coord(cord.x + 100, cord.y + 100)); }
     private Space getBottomLeftMove(Coord cord) { return board.getSpaceFromCoord(new Coord(cord.x - 100, cord.y + 100)); }
     private Space getTopLeftMove(Coord cord) { return board.getSpaceFromCoord(new Coord(cord.x - 100, cord.y - 100)); }

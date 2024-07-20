@@ -5,17 +5,18 @@ PHASE 1 Complete game as an over the board game
 
 PHASE 2 Enforce the rules of Chess
 
-- Restrict moves that do not block check
+- Fix pawns moving through other pieces bug
 
-- Restrict moves that put king in check
+- Include logic to te detect foran en passant move and for en passant to appear in front of the target piece and 
+    make the target piece dissapear 
 
-- Implement AU passant 
+- Implement a check for pins to validate move
 
 - Pieces from moving to put the king in check
 
 - Implement checkmate
 
-- Implememnt turns
+- Implememnt turns in gameState
 
 
 REFACTOR NOTES: 

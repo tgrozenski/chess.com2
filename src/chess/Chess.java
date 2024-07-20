@@ -5,19 +5,12 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseAdapter;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.awt.*;
 
 public class Chess {
-    static ArrayList<Coord> legalMoves; 
-    static HashMap<String, Piece> boardPosition = new HashMap<>(); 
-    static Piece lastClickedPiece;
-    static int counter;
+    static GameState gameState = new GameState();
+    static Board board = new Board();
     static boolean gameActive = false;
-    static boolean whiteCheck = false;
-    static boolean blackCheck = false;
-    static Board tempBoard = new Board();
     
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> createAndShowGUI());
@@ -25,13 +18,14 @@ public class Chess {
 
     private static void createAndShowGUI() {
 
+        System.out.println("CREATING AND SHOWING GUI");
         JFrame f = new JFrame("Chess.com 2");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //initialize the board only once 
 
-        if(gameActive == false) {
+        if(gameState.gameActive == false) {
             initializeBoard();
-            gameActive = true;
+            gameState.gameActive = true;
         }
 
         JPanel panel = new JPanel() {
@@ -42,9 +36,9 @@ public class Chess {
             }
             public void highlightLegalMoves(Graphics g) {
                     Board board = new Board();
-                    legalMoves.forEach( c -> {
+                    
+                    gameState.getLegalMoves().forEach( c -> {
                     // System.out.println("Legal Moves " + c.x + " " + c.y + " " + c.notation + " Count:  " + counter);
-                    counter++;
                     if (c.highlight == true) {
                         try {
                             board.highlightSquare(g, "00" + c.notation);
@@ -61,10 +55,10 @@ public class Chess {
                 board.drawNotation(g);
                 board.drawSpaces(g);
 
-                for(Piece p: boardPosition.values()) {
+                for(Piece p: gameState.getBoardPosition().values()) {
                     board.renderSpace(g, p);
                 }
-                if(legalMoves != null) {
+                if(gameState.getLegalMoves() != null) {
                     highlightLegalMoves(g);
                 }
             }
@@ -74,7 +68,7 @@ public class Chess {
         panel.addMouseListener( new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                handleTouchEvent(panel, tempBoard, e);
+                handleTouchEvent(panel, board, e);
             }
         });
 
@@ -96,14 +90,14 @@ public class Chess {
         "0pa2", "0pb2", "0pc2", "0pd2", "0pe2", "0pf2", "0pg2", "0ph2", "0ra1", "0rh1", "0nb1", "0ng1", "0bc1", "0bf1", "0qd1", "0ke1", 
         };
         for(String str: startingPosition) {
-            boardPosition.put(str, new Piece(str, false, false));
+            gameState.addPiece(str, new Piece(str, false, false));
             // Piece current = boardPosition.get(str);
             // System.out.println(current.notation + " " + current.position.indexX + " " + current.position.indexY  + " " + current.position.x + current.position.y);
         }
     }
 
     private static boolean validateMove(Coord c) {
-        for(Coord current: legalMoves) {
+        for(Coord current: gameState.getLegalMoves()) {
            if(c.notation.equals(current.notation)) {
             return true;
            }
@@ -112,7 +106,7 @@ public class Chess {
     }
 
     public Piece getPieceFromBoard(Piece p) {
-        for(Piece current: boardPosition.values()) {
+        for(Piece current: gameState.getBoardPosition().values()) {
             if(current.color == p.color && current.pieceType == 'k') {
                 return current;
             }
@@ -121,100 +115,108 @@ public class Chess {
     }
 
     private static void handleTouchEvent(JPanel panel, Board tempBoard, MouseEvent e) {
-        counter = 1;
         Space touchedSpace = tempBoard.getSpaceFromCoord(new Coord(roundDownNearest100(e.getX()), roundDownNearest100(e.getY())));
         Coord touchedCoord = new Coord(touchedSpace.XPOS, touchedSpace.YPOS);
 
-        if(lastClickedPiece != null  && validateMove(touchedCoord)) {
+        if(gameState.getPreviousPiece() != null  && validateMove(touchedCoord)) {
             Piece target = tempBoard.getSpaceFromCoord(touchedCoord).currentPiece; 
             //castling
-            if(target!= null && target.color == lastClickedPiece.color) {
+            if(target!= null && target.color == gameState.getPreviousPiece().color) {
                 Coord newKing = null, newRook = null;
                 Piece king, rook;
+
                 if (target.position.x == 800) {
-                    newKing = new Coord(lastClickedPiece.position.x + 200, lastClickedPiece.position.y);
+                    newKing = new Coord(gameState.getPreviousPiece().position.x + 200, gameState.getPreviousPiece().position.y);
                     newRook = new Coord(target.position.x - 200, target.position.y);
                 } else if(target.position.x == 100){
-                    newKing = new Coord(lastClickedPiece.position.x - 200, lastClickedPiece.position.y);
+                    newKing = new Coord(gameState.getPreviousPiece().position.x - 200, gameState.getPreviousPiece().position.y);
                     newRook = new Coord(target.position.x + 300, target.position.y);
                 }
 
-                king = new Piece(lastClickedPiece.color + "" + lastClickedPiece.pieceType + "" + newKing.notation, false , true);
+                king = new Piece(gameState.getPreviousPiece().color + "" + gameState.getPreviousPiece().pieceType + "" + newKing.notation, false , true);
                 rook = new Piece(target.color + "" + target.pieceType + "" + newRook.notation, false , true);
                 king.hasMoved = true;
                 rook.hasMoved = true;
                 //set Old spaces to null and new to proper values
                 tempBoard.setSpaceCurrentPiece(null, target.position);
-                tempBoard.setSpaceCurrentPiece(null, lastClickedPiece.position);
+                tempBoard.setSpaceCurrentPiece(null, gameState.getPreviousPiece().position);
 
                 try {
                     tempBoard.setSpaceCurrentPiece(king, newKing);
                     tempBoard.setSpaceCurrentPiece(rook, newRook);
-                    boardPosition.remove(target.notation);
-                    boardPosition.remove(lastClickedPiece.notation);
-                    boardPosition.put(king.notation, king);
-                    boardPosition.put(rook.notation, rook);
+                    gameState.removePiece(target.notation);
+                    gameState.removePiece(gameState.getPreviousPiece().notation);
+                    gameState.addPiece(king.notation, king);
+                    gameState.addPiece(rook.notation, rook);
                 } catch (Exception except) {except.printStackTrace();}
 
-                legalMoves.clear();
-                lastClickedPiece = null;
+                gameState.clearLegalMoves();
+                gameState.setPreviousPiece(null);
                 panel.repaint();
 
             }
             else {
-                System.out.println("Standard Move Detected");
+                System.out.println("Standard Move Detected  Previous Piece: "); 
+                if(gameState.getPreviousMovedPiece() != null) {
+                    System.out.println("Previously Moved Piece " + gameState.getPreviousMovedPiece().notation);
+                }
 
-                String newNotation = tempBoard.getNewNotation(lastClickedPiece, touchedCoord);
+                String newNotation = tempBoard.getNewNotation(gameState.getPreviousPiece(), touchedCoord);
                 Piece newPiece = new Piece(newNotation, false, true);
                 newPiece.hasMoved = true;
+                newPiece.moveCount += gameState.getPreviousPiece().moveCount + 1;
                 Piece previousPiece = tempBoard.getSpaceFromCoord(touchedCoord).currentPiece;
 
-                boardPosition.remove(lastClickedPiece.notation);
-                try { boardPosition.remove(previousPiece.notation); } catch (Exception ex) {}
-                boardPosition.put(newNotation, newPiece);
+                gameState.removePiece(gameState.getPreviousPiece().notation);
+                try { gameState.removePiece(previousPiece.notation); } catch (Exception ex) {}
+                gameState.addPiece(newNotation, newPiece);
                 tempBoard.setSpaceCurrentPiece(newPiece, touchedCoord);
 
-                legalMoves.clear();
+                gameState.clearLegalMoves();
                 checkForCheck(newPiece);
-                lastClickedPiece = null;
-                // latestPiece = newPiece;
+                gameState.setPreviousMovedPiece(newPiece);
                 panel.repaint();
             }
         }
         else if(touchedSpace.currentPiece == null) {
             System.out.println("user has not clicked a legal move, clear the board");
-            legalMoves.clear();
+            gameState.clearLegalMoves();
             panel.repaint();
-            lastClickedPiece = null;
+            // gameState.setPreviousPiece(null);
         }
         else {
             System.out.println("user is clicking a piece for the first time");
+
+            if(gameState.getPreviousMovedPiece() != null) {
+                System.out.println("Previously Moved Piece " + gameState.getPreviousMovedPiece().notation);
+            }
             try {
-                lastClickedPiece = touchedSpace.currentPiece;
-                legalMoves = touchedSpace.currentPiece.getLegalMoves(false, true);
-                System.out.println("CURRENT CLICKED PIECE: " + lastClickedPiece.notation);
+                gameState.setPreviousPiece(touchedSpace.currentPiece);
+                gameState.setLegalMoves(touchedSpace.currentPiece.getLegalMoves(false, true));
+                System.out.println("CURRENT CLICKED PIECE: " + gameState.getPreviousPiece().notation);
             } catch (Exception ex) {ex.printStackTrace();};
+            System.out.println("Current Move Count" + touchedSpace.currentPiece.moveCount);
             panel.repaint();
         }
     }
     public static void checkForCheck(Piece p) {
        System.out.println("CHECKING FOR CHECK " + p.notation);
-       legalMoves = p.getLegalMoves(false, false);
-       for(Coord c: legalMoves) {
+       gameState.setLegalMoves(p.getLegalMoves(false, false));
+       for(Coord c: gameState.getLegalMoves()) {
         try {
-            Piece current = tempBoard.getSpaceFromCoord(c).currentPiece;
+            Piece current = board.getSpaceFromCoord(c).currentPiece;
            if(current.pieceType == 'k') {
                 if(current.color == 0) {
-                    whiteCheck = true;
+                    gameState.setWhiteCheckStatus(true);
                     System.out.println("WHITE IN CHECK ");
                 }
                 else {
-                    blackCheck= true;
+                    gameState.setBlackCheckStatus(true);
                     System.out.println("BLACK IN CHECK ");
                 }
            }
         } catch (Exception e) {}
        }
-    legalMoves.clear();
+       gameState.clearLegalMoves();
     }
 }

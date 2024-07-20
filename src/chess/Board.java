@@ -106,7 +106,7 @@ public class Board {
     }
 
     public Space getSpaceFromCoord(Coord coord) {
-        if(coord.x > 800 || coord.y > 800) {
+        if(coord.x > 800 || coord.y > 800 || coord.x < 100 || coord.y < 100) {
             return null;
         }
         return spacesArr[coord.indexX][coord.indexY];

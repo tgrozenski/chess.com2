@@ -6,10 +6,12 @@ import java.util.ArrayList;
 public class GameState {
     private static boolean whiteCheckStatus = false;
     private static boolean blackCheckStatus = false;
+    public boolean gameActive = false;
     private static Piece previousPiece;
+    private static Piece previousMovedPiece;
     private static int currentTurn = 0;
-    private static ArrayList<Coord> legalMoves; 
-    private static HashMap<String, Piece> boardPosition;
+    private static ArrayList<Coord> legalMoves = new ArrayList<>(); 
+    private static HashMap<String, Piece> boardPosition = new HashMap<>();
 
     public boolean getWhiteCheckStatus() {
         return whiteCheckStatus;
@@ -29,6 +31,12 @@ public class GameState {
     public void setPreviousPiece(Piece p) {
         previousPiece = p;
     }
+    public void setPreviousMovedPiece(Piece p) {
+        previousMovedPiece = p;
+    }
+    public Piece getPreviousMovedPiece() {
+        return previousMovedPiece;
+    }
     public int getCurrentTurn() {
         return currentTurn;
     }
@@ -40,5 +48,20 @@ public class GameState {
     }
     public ArrayList<Coord> getLegalMoves() {
         return legalMoves;
+    }
+    public void setBoardPosition(HashMap<String, Piece> board) {
+        boardPosition = board;
+    }
+    public void addPiece(String key, Piece value) {
+        boardPosition.put(key, value);
+    }
+    public void removePiece(String notation) {
+        boardPosition.remove(notation);
+    }
+    public HashMap<String, Piece> getBoardPosition() {
+        return boardPosition;
+    }
+    public void clearLegalMoves() {
+        legalMoves.clear();
     }
 }

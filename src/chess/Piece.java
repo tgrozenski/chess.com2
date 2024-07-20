@@ -6,12 +6,10 @@ public class Piece {
     public Coord position;
     public char pieceType;
     public int color;
-    public int moveCount = 0;
+    public int moveCount;
     public boolean isTaken = false;
     public boolean hasMoved = false;
     public String imagePath;
-
-    // abstract int[] getLegalMoves();
 
     Piece(String notation, boolean isTaken, boolean hasMoved) {
         this.hasMoved = hasMoved;
