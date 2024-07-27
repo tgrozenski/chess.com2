@@ -5,8 +5,6 @@ PHASE 1 Complete game as an over the board game
 
 PHASE 2 Enforce the rules of Chess
 
-- Fix pawns moving through other pieces bug
-
 - Include logic to te detect foran en passant move and for en passant to appear in front of the target piece and 
     make the target piece dissapear 
 

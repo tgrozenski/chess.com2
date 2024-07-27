@@ -118,28 +118,33 @@ public class Chess {
         Space touchedSpace = tempBoard.getSpaceFromCoord(new Coord(roundDownNearest100(e.getX()), roundDownNearest100(e.getY())));
         Coord touchedCoord = new Coord(touchedSpace.XPOS, touchedSpace.YPOS);
 
-        if(gameState.getPreviousPiece() != null  && validateMove(touchedCoord)) {
-            Piece target = tempBoard.getSpaceFromCoord(touchedCoord).currentPiece; 
+        Piece selectedPiece = gameState.getPreviousPiece();
+        Piece target = null;
+        if(tempBoard.getSpaceFromCoord(touchedCoord).currentPiece != null) {
+            target = tempBoard.getSpaceFromCoord(touchedCoord).currentPiece;
+        }
+
+        if(selectedPiece != null  && validateMove(touchedCoord)) {
             //castling
-            if(target!= null && target.color == gameState.getPreviousPiece().color) {
+            if(target!= null && target.color == selectedPiece.color) {
                 Coord newKing = null, newRook = null;
                 Piece king, rook;
 
                 if (target.position.x == 800) {
-                    newKing = new Coord(gameState.getPreviousPiece().position.x + 200, gameState.getPreviousPiece().position.y);
+                    newKing = new Coord(selectedPiece.position.x + 200, selectedPiece.position.y);
                     newRook = new Coord(target.position.x - 200, target.position.y);
                 } else if(target.position.x == 100){
-                    newKing = new Coord(gameState.getPreviousPiece().position.x - 200, gameState.getPreviousPiece().position.y);
+                    newKing = new Coord(selectedPiece.position.x - 200, selectedPiece.position.y);
                     newRook = new Coord(target.position.x + 300, target.position.y);
                 }
 
-                king = new Piece(gameState.getPreviousPiece().color + "" + gameState.getPreviousPiece().pieceType + "" + newKing.notation, false , true);
+                king = new Piece(selectedPiece.color + "" + selectedPiece.pieceType + "" + newKing.notation, false , true);
                 rook = new Piece(target.color + "" + target.pieceType + "" + newRook.notation, false , true);
                 king.hasMoved = true;
                 rook.hasMoved = true;
                 //set Old spaces to null and new to proper values
                 tempBoard.setSpaceCurrentPiece(null, target.position);
-                tempBoard.setSpaceCurrentPiece(null, gameState.getPreviousPiece().position);
+                tempBoard.setSpaceCurrentPiece(null, selectedPiece.position);
 
                 try {
                     tempBoard.setSpaceCurrentPiece(king, newKing);
@@ -165,10 +170,9 @@ public class Chess {
                 Piece newPiece = new Piece(newNotation, false, true);
                 newPiece.hasMoved = true;
                 newPiece.moveCount += gameState.getPreviousPiece().moveCount + 1;
-                Piece previousPiece = tempBoard.getSpaceFromCoord(touchedCoord).currentPiece;
 
-                gameState.removePiece(gameState.getPreviousPiece().notation);
-                try { gameState.removePiece(previousPiece.notation); } catch (Exception ex) {}
+                gameState.removePiece(selectedPiece.notation);
+                try { gameState.removePiece(target.notation); } catch (Exception ex) {}
                 gameState.addPiece(newNotation, newPiece);
                 tempBoard.setSpaceCurrentPiece(newPiece, touchedCoord);
 
@@ -178,12 +182,18 @@ public class Chess {
                 panel.repaint();
             }
         }
+        //En Passant
         else if(touchedSpace.currentPiece == null) {
             System.out.println("user has not clicked a legal move, clear the board");
             gameState.clearLegalMoves();
             panel.repaint();
             // gameState.setPreviousPiece(null);
         }
+        // else if(target != null && selectedPiece != null && touchedSpace.currentPiece.pieceType == 'p' && touchedSpace.currentPiece.color != selectedPiece.color && 
+        // selectedPiece.position.x - 100 == touchedSpace.currentPiece.position.x || 
+        // selectedPiece.position.x + 100 == touchedSpace.currentPiece.position.x) {
+        //     System.out.println("AN EN PASSANT MOVE IS BEING ATTMPTED");
+        // }
         else {
             System.out.println("user is clicking a piece for the first time");
 

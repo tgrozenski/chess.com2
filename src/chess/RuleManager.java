@@ -138,7 +138,9 @@ public class RuleManager {
         // System.out.println("POSITION IN GET MOVES: " + position.x + " " + position.y);
         if(p.color == WHITE) {
             checkPiecePawnMove(getTopMove(position), p.color);
-            checkPiecePawnMove(getTop2Move(position), p.color);
+            if(!p.hasMoved && getTopMove(position).currentPiece == null) {
+                checkPiecePawnMove(getTop2Move(position), p.color);
+            }
             checkPiecePawnTake(getTopLeftMove(position), p.color);
             checkPiecePawnTake(getTopRightMove(position), p.color);
         }
