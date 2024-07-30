@@ -1,6 +1,5 @@
 package chess;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class RuleManager {
 
@@ -39,6 +38,7 @@ public class RuleManager {
                 c.highlight = false;
             }
         }
+        handlePin(p);
         return legalMoves;
     }
 
@@ -156,9 +156,6 @@ public class RuleManager {
 
     public void getKingMoves(Piece p, boolean check) {
         // System.out.println("Piece in King moves " + p.position.x + " " + p.position.y);
-        GameState gs = new GameState();
-        HashMap<String, Piece> boardPosition = gs.getBoardPosition();
-        ArrayList<Coord> restrictedMoves;
         if(!check) {
             System.out.println("Can Castle Right? " + canCastleLeft(p));
             System.out.println("Can Castle left? " + canCastleRight(p));
@@ -223,15 +220,15 @@ public class RuleManager {
         Piece previousMovedPiece = gs.getPreviousMovedPiece();
 
         if(right != null && right.currentPiece!= null && right.currentPiece.pieceType == p.pieceType && right.currentPiece.moveCount == 1){
-            System.out.println("Found a match! on the Right");
-            if(previousMovedPiece!= null && previousMovedPiece.notation == right.currentPiece.notation) {
-                System.out.println("Match is valid");
+            if(previousMovedPiece!= null && previousMovedPiece.notation == right.currentPiece.notation 
+                && p.position.y == 400 || p.position.y == 500) {
+                System.out.println("Match is valid move count " + right.currentPiece.moveCount);
                 legalMoves.add(new Coord(right.XPOS, right.YPOS));
             }
         }
         else if(left!= null && left.currentPiece!= null && left.currentPiece.pieceType == p.pieceType && left.currentPiece.moveCount == 1){
-            System.out.println("Found a match! on the Left");
-            if(previousMovedPiece!= null && previousMovedPiece.notation == left.currentPiece.notation) {
+            if(previousMovedPiece!= null && previousMovedPiece.notation == left.currentPiece.notation
+                && p.position.y == 400 || p.position.y == 500) {
                 System.out.println("Match is valid");
                 legalMoves.add(new Coord(left.XPOS, left.YPOS));
             }
@@ -241,17 +238,15 @@ public class RuleManager {
         }
     }
 
-    private void validateForKing(Piece p) {
-        //checks whether or not move will put king in check
-        //if p.pieceType == 'k'
-        //check algorithmically if new target position is in any line of fire
-        //check for pawns in top quadrants
-        //check for knight in all possible night spaces
-        // check for rooks and queens on the diagonal, check for bishops and rooks
-        //checks if any pieces of the opposite color
-        //else p.pieceType not 'k'
-        //check if pinned
-        //if pinned no legal moves
+    private void handlePin(Piece p) {
+
+        GameState gs = new GameState();
+        Piece King = gs.getKing(p.color);
+        System.out.println("Found King! " + King.notation);
+        //find any threat on the diagonals or row piece is on
+        if(p.pieceType != 'k') {
+            detectLocation(p, King);
+        }
     }
 
     private boolean checkPieceTakeable(Space s, int color) {
@@ -286,14 +281,93 @@ public class RuleManager {
         }
     }
 
-    //TODO AU PASSANT 
-    //When move is implemented keep a registry with last piece moved
-    //Check this to determine if Au passant is a move
-    //Pawn can take au PASSANT if pawn moved by two squares next to it on the left or right
-    // top == -  
-    //bottom == + 
-    //left == -
-    //right == + 
+    private void detectLocation(Piece p, Piece King) {
+        if(p.position.x == King.position.x) {
+            if(p.position.y > King.position.y){
+                Coord iterator = p.position;
+                boolean pinned = true;
+                Board b = new Board();
+                while(iterator.y < King.position.y) {
+                    if(b.getSpaceFromCoord(iterator).currentPiece != null) {
+                       pinned = false; 
+                       break;
+                    }
+                    else { iterator.y -= 100; }
+                }
+                if(pinned) {
+                    System.out.println("Piece is below King " + p.notation);
+                }
+            }
+            else {
+                System.out.println("Piece is above king ");
+            }
+        }
+        if(p.position.y == King.position.y) {
+            if(p.position.x > King.position.x){
+                System.out.println("Piece is on the right");
+            }
+            else {
+                System.out.println("Piece is on the Left ");
+            }
+        }
+        //diagonals
+        Coord right = p.position;
+        for(int i = 0; i < 8; i++) {
+                if(King != null && right.x == King.position.x && right.y == King.position.y) {
+                    System.out.println("Piece is on the bottom left of king " + p.notation + " " + King.notation); 
+                    break;
+                }
+                Space s = getTopRightMove(right);
+                if(s != null) {
+                    right = new Coord(s.XPOS, s.YPOS);
+                    if(s.currentPiece !=  null && s.currentPiece.pieceType != 'k') 
+                    { break; }
+                }
+                else { break; }
+        }
+        Coord left = p.position;
+        for(int i = 0; i < 8; i++) {
+            if(King != null && left.x == King.position.x && left.y == King.position.y) {
+                System.out.println("Piece is on the bottom right of king "); 
+                break;
+            }
+            Space s = getTopLeftMove(left);
+            if(s != null) {
+                left = new Coord(s.XPOS, s.YPOS);
+                if(s.currentPiece !=  null && s.currentPiece.pieceType != 'k') 
+                { break; }
+            }
+            else { break; }
+        }
+        Coord bottomRight = p.position;
+        for(int i = 0; i < 8; i++) {
+            if(King != null && bottomRight.x == King.position.x && bottomRight.y == King.position.y) {
+                System.out.println("Piece is on the top left of king "); 
+                break;
+            }
+            Space s = getBottomRightMove(bottomRight);
+            if(s != null) {
+                bottomRight = new Coord(s.XPOS, s.YPOS);
+                if(s.currentPiece !=  null && s.currentPiece.pieceType != 'k') 
+                { break; }
+            }
+            else { break; }
+        }
+        Coord bottomLeft = p.position;
+        for(int i = 0; i < 8; i++) {
+            if(King != null && bottomLeft.x == King.position.x && bottomLeft.y == King.position.y) {
+                System.out.println("Piece is on the top right of king "); 
+                break;
+            }
+            Space s = getBottomLeftMove(bottomLeft);
+            if(s != null) {
+                bottomLeft = new Coord(s.XPOS, s.YPOS);
+                if(s.currentPiece !=  null && s.currentPiece.pieceType != 'k') 
+                { break; }
+            }
+            else { break; }
+        }
+    }
 
     private Space getBottomRightMove(Coord cord) { return board.getSpaceFromCoord(new Coord(cord.x + 100, cord.y + 100)); }
     private Space getBottomLeftMove(Coord cord) { return board.getSpaceFromCoord(new Coord(cord.x - 100, cord.y + 100)); }

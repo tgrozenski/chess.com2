@@ -160,6 +160,25 @@ public class Chess {
                 panel.repaint();
 
             }
+            //en passant
+            else if(target != null && target.pieceType == 'p' && selectedPiece.pieceType == 'p' && selectedPiece.color != target.pieceType
+                && target.position.y == selectedPiece.position.y 
+                ) {
+
+                System.out.println("EN PASSANT");
+                int val;
+                if(target.color == 1) { val = -100; }
+                else { val = 100; } 
+                gameState.removePiece(target.notation);
+                gameState.removePiece(selectedPiece.notation);
+                Piece newPiece = new Piece(tempBoard.getNewNotation(selectedPiece, new Coord(target.position.x, target.position.y + val)), false, true);
+                gameState.addPiece(newPiece.notation, newPiece);
+
+                gameState.clearLegalMoves();
+                gameState.setPreviousPiece(null);
+                panel.repaint();
+            }
+            
             else {
                 System.out.println("Standard Move Detected  Previous Piece: "); 
                 if(gameState.getPreviousMovedPiece() != null) {
@@ -182,18 +201,12 @@ public class Chess {
                 panel.repaint();
             }
         }
-        //En Passant
         else if(touchedSpace.currentPiece == null) {
             System.out.println("user has not clicked a legal move, clear the board");
             gameState.clearLegalMoves();
             panel.repaint();
-            // gameState.setPreviousPiece(null);
         }
-        // else if(target != null && selectedPiece != null && touchedSpace.currentPiece.pieceType == 'p' && touchedSpace.currentPiece.color != selectedPiece.color && 
-        // selectedPiece.position.x - 100 == touchedSpace.currentPiece.position.x || 
-        // selectedPiece.position.x + 100 == touchedSpace.currentPiece.position.x) {
-        //     System.out.println("AN EN PASSANT MOVE IS BEING ATTMPTED");
-        // }
+
         else {
             System.out.println("user is clicking a piece for the first time");
 

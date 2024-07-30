@@ -61,6 +61,14 @@ public class GameState {
     public HashMap<String, Piece> getBoardPosition() {
         return boardPosition;
     }
+    public Piece getKing(int color) {
+        for(Piece p : boardPosition.values()) {
+            if(p.pieceType == 'k' && p.color == color) {
+                return p;
+            }
+        }
+        return null;
+    }
     public void clearLegalMoves() {
         legalMoves.clear();
     }

@@ -2,14 +2,15 @@ TODO
 
 PHASE 1 Complete game as an over the board game
 
-
 PHASE 2 Enforce the rules of Chess
-
-- Include logic to te detect foran en passant move and for en passant to appear in front of the target piece and 
-    make the target piece dissapear 
 
 - Implement a check for pins to validate move
 
+    - locate a threat create a piece variable for it
+    - 
+
+- Fix en passant bug white is being allowed to take other white pieces
+    
 - Pieces from moving to put the king in check
 
 - Implement checkmate
