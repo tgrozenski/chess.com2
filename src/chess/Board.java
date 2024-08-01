@@ -6,22 +6,21 @@ import javax.imageio.ImageIO;
 
 public class Board {
 
-    public static final int boardWidthLength= 800;
+    public static final int idthLength= 800;
     public static final int spaceWidthLength = 100;
     public static final Color primaryColor = new Color(173, 216, 230);
     public static final Color secondaryColor = new Color(167, 199, 231);
     public static final Color highlightColor = new Color(255,255,102);
-    private static Color currentColor = primaryColor;
-    private static Space[][] spacesArr = new Space[8][8];
+    public static Color currentColor = primaryColor;
+    public static Space[][] spacesArr = new Space[8][8];
     public static Piece lastPieceMoved;
 
     public Space[][] drawSpaces(Graphics g) {
-        for (int currentY = spaceWidthLength, outer = 0; currentY <= boardWidthLength; currentY+=100, outer++) {
-            for(int currentX = spaceWidthLength, inner = 0; currentX <= boardWidthLength; currentX+=100, inner++) {
+        for (int currentY = spaceWidthLength, outer = 0; currentY <= idthLength; currentY+=100, outer++) {
+            for(int currentX = spaceWidthLength, inner = 0; currentX <= idthLength; currentX+=100, inner++) {
                 g.setColor(currentColor);
                 g.fillRect(currentX, currentY, spaceWidthLength, spaceWidthLength); 
                 spacesArr[outer][inner] = new Space(currentColor, currentX, currentY);
-                // System.out.println(spacesArr[outer][inner].XPOS + " " +  spacesArr[outer][inner].YPOS + " " + " Outer: " + outer + " Inner: " + inner);
                 colorSwap();
             }
             colorSwap();
@@ -33,19 +32,19 @@ public class Board {
         String iterator = "8";
         Font currentFont = g.getFont();
         g.setFont(currentFont.deriveFont(currentFont.getSize() * 2.5F)); 
-        for (int currentY = spaceWidthLength + 65; currentY <= boardWidthLength + 100; currentY+=100) {
+        for (int currentY = spaceWidthLength + 65; currentY <= idthLength + 100; currentY+=100) {
             g.drawString(iterator, 50, currentY); 
             iterator = (Integer.parseInt(iterator) - 1) + "";
         }
         iterator = "a";
-        for (int currentX= spaceWidthLength + 35; currentX <= boardWidthLength + 100; currentX+=100) {
+        for (int currentX= spaceWidthLength + 35; currentX <= idthLength + 100; currentX+=100) {
             g.drawString(iterator, currentX, 950); 
             int charValue = iterator.charAt(0); 
             iterator = String.valueOf((char) (charValue + 1));
         }
     }
 
-    private void colorSwap() {
+    public void colorSwap() {
         if(currentColor == primaryColor) {
             currentColor = secondaryColor;
         }
@@ -122,4 +121,15 @@ public class Board {
     public String getNewNotation(Piece p, Coord dest) {
         return p.color + "" +  p.pieceType + dest.notation;
     }
+
+    public Space getBottomRightMove(Coord cord) { return getSpaceFromCoord(new Coord(cord.x + 100, cord.y + 100)); }
+    public Space getBottomLeftMove(Coord cord) { return getSpaceFromCoord(new Coord(cord.x - 100, cord.y + 100)); }
+    public Space getTopLeftMove(Coord cord) { return getSpaceFromCoord(new Coord(cord.x - 100, cord.y - 100)); }
+    public Space getTopRightMove(Coord cord) { return getSpaceFromCoord(new Coord(cord.x + 100, cord.y - 100)); }
+    public Space getLeftMove(Coord cord) { return getSpaceFromCoord(new Coord(cord.x - 100, cord.y)); }
+    public Space getRightMove(Coord cord) { return getSpaceFromCoord(new Coord(cord.x + 100, cord.y)); }
+    public Space getTopMove(Coord cord) { return getSpaceFromCoord(new Coord(cord.x, cord.y - 100)); }
+    public Space getTop2Move(Coord cord) { return getSpaceFromCoord(new Coord(cord.x, cord.y - 200)); }
+    public Space getBottom2Move(Coord cord) { return getSpaceFromCoord(new Coord(cord.x, cord.y + 200)); }
+    public Space getBottomMove(Coord cord) { return getSpaceFromCoord(new Coord(cord.x, cord.y + 100)); }
 }

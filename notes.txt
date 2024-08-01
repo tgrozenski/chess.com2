@@ -9,7 +9,6 @@ PHASE 2 Enforce the rules of Chess
     - locate a threat create a piece variable for it
     - 
 
-- Fix en passant bug white is being allowed to take other white pieces
     
 - Pieces from moving to put the king in check
 
@@ -17,6 +16,9 @@ PHASE 2 Enforce the rules of Chess
 
 - Implememnt turns in gameState
 
+           Bugs
+    - Fix en passant bug white is being allowed to take other white pieces
+    - pawns taking backwards
 
 REFACTOR NOTES: 
 

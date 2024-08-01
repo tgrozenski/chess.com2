@@ -8,6 +8,7 @@ public class RuleManager {
     private static final int WHITE = 0;
     private boolean highlightState;
     
+    
     public ArrayList<Coord> getLegalMoves(Piece p, boolean check, boolean highlight) {
         // System.out.println("IN CHECK?" + checkForCheck(p));
         this.highlightState = highlight;
@@ -38,8 +39,33 @@ public class RuleManager {
                 c.highlight = false;
             }
         }
-        handlePin(p);
+
+        //filter moves using maps from crawler
+        if(p.pieceType != 'k') {
+            GameState gs = new GameState();
+            Crawler crawler = new Crawler();
+            pinnedTo pinnedState = pinnedTo.NOT_PINNED;
+            pinnedTo relation = crawler.relationToKing(p, gs.getKing(p.color));
+
+            System.out.println("KING RELATION "  + relation);
+            if(relation != pinnedTo.NOT_PINNED) {
+                crawler.crawlSpaces(p, relation);
+                System.out.println("enemy piece " + crawler.enemyPiece);
+                System.out.println("team pieces " + crawler.teamSpaces.size());
+            }
+            if(crawler.enemyPiece != null && crawler.teamSpaces.size() == 0) {
+               pinnedState = relation; 
+            }
+            System.out.println("PINNED STATE " + pinnedState);
+            if(pinnedState != pinnedTo.NOT_PINNED) {
+                legalMoves.clear();
+                for(Coord c : crawler.emptySpaces.values()) {
+                    legalMoves.add(c);
+                }
+                legalMoves.add(crawler.enemyPiece.position);
+            } }
         return legalMoves;
+
     }
 
     public void getKnightMoves(Piece p) {
@@ -238,16 +264,7 @@ public class RuleManager {
         }
     }
 
-    private void handlePin(Piece p) {
 
-        GameState gs = new GameState();
-        Piece King = gs.getKing(p.color);
-        System.out.println("Found King! " + King.notation);
-        //find any threat on the diagonals or row piece is on
-        if(p.pieceType != 'k') {
-            detectLocation(p, King);
-        }
-    }
 
     private boolean checkPieceTakeable(Space s, int color) {
         if(s != null && s.currentPiece == null ) {
@@ -278,94 +295,6 @@ public class RuleManager {
     private void checkPiecePawnMove(Space s, int originalPieceColor) {
         if(s!= null && s.currentPiece == null) {
             legalMoves.add(new Coord(s.XPOS, s.YPOS));
-        }
-    }
-
-    private void detectLocation(Piece p, Piece King) {
-        if(p.position.x == King.position.x) {
-            if(p.position.y > King.position.y){
-                Coord iterator = p.position;
-                boolean pinned = true;
-                Board b = new Board();
-                while(iterator.y < King.position.y) {
-                    if(b.getSpaceFromCoord(iterator).currentPiece != null) {
-                       pinned = false; 
-                       break;
-                    }
-                    else { iterator.y -= 100; }
-                }
-                if(pinned) {
-                    System.out.println("Piece is below King " + p.notation);
-                }
-            }
-            else {
-                System.out.println("Piece is above king ");
-            }
-        }
-        if(p.position.y == King.position.y) {
-            if(p.position.x > King.position.x){
-                System.out.println("Piece is on the right");
-            }
-            else {
-                System.out.println("Piece is on the Left ");
-            }
-        }
-        //diagonals
-        Coord right = p.position;
-        for(int i = 0; i < 8; i++) {
-                if(King != null && right.x == King.position.x && right.y == King.position.y) {
-                    System.out.println("Piece is on the bottom left of king " + p.notation + " " + King.notation); 
-                    break;
-                }
-                Space s = getTopRightMove(right);
-                if(s != null) {
-                    right = new Coord(s.XPOS, s.YPOS);
-                    if(s.currentPiece !=  null && s.currentPiece.pieceType != 'k') 
-                    { break; }
-                }
-                else { break; }
-        }
-        Coord left = p.position;
-        for(int i = 0; i < 8; i++) {
-            if(King != null && left.x == King.position.x && left.y == King.position.y) {
-                System.out.println("Piece is on the bottom right of king "); 
-                break;
-            }
-            Space s = getTopLeftMove(left);
-            if(s != null) {
-                left = new Coord(s.XPOS, s.YPOS);
-                if(s.currentPiece !=  null && s.currentPiece.pieceType != 'k') 
-                { break; }
-            }
-            else { break; }
-        }
-        Coord bottomRight = p.position;
-        for(int i = 0; i < 8; i++) {
-            if(King != null && bottomRight.x == King.position.x && bottomRight.y == King.position.y) {
-                System.out.println("Piece is on the top left of king "); 
-                break;
-            }
-            Space s = getBottomRightMove(bottomRight);
-            if(s != null) {
-                bottomRight = new Coord(s.XPOS, s.YPOS);
-                if(s.currentPiece !=  null && s.currentPiece.pieceType != 'k') 
-                { break; }
-            }
-            else { break; }
-        }
-        Coord bottomLeft = p.position;
-        for(int i = 0; i < 8; i++) {
-            if(King != null && bottomLeft.x == King.position.x && bottomLeft.y == King.position.y) {
-                System.out.println("Piece is on the top right of king "); 
-                break;
-            }
-            Space s = getBottomLeftMove(bottomLeft);
-            if(s != null) {
-                bottomLeft = new Coord(s.XPOS, s.YPOS);
-                if(s.currentPiece !=  null && s.currentPiece.pieceType != 'k') 
-                { break; }
-            }
-            else { break; }
         }
     }
 
