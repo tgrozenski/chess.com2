@@ -40,32 +40,44 @@ public class RuleManager {
             }
         }
 
-        //filter moves using maps from crawler
         if(p.pieceType != 'k') {
             GameState gs = new GameState();
             Crawler crawler = new Crawler();
+
+            //determine king relationship
             pinnedTo pinnedState = pinnedTo.NOT_PINNED;
             pinnedTo relation = crawler.relationToKing(p, gs.getKing(p.color));
-
             System.out.println("KING RELATION "  + relation);
+
+            //determine pin
             if(relation != pinnedTo.NOT_PINNED) {
                 crawler.crawlSpaces(p, relation);
-                System.out.println("enemy piece " + crawler.enemyPiece);
-                System.out.println("team pieces " + crawler.teamSpaces.size());
-            }
-            if(crawler.enemyPiece != null && crawler.teamSpaces.size() == 0) {
-               pinnedState = relation; 
+                if(crawler.enemyPiece != null) {
+                    if(crawler.threatPresent(relation, crawler.enemyPiece) && crawler.teamSpaces.size() == 0) {
+                        pinnedState = relation; 
+                    }
+                }
             }
             System.out.println("PINNED STATE " + pinnedState);
-            if(pinnedState != pinnedTo.NOT_PINNED) {
-                legalMoves.clear();
-                for(Coord c : crawler.emptySpaces.values()) {
-                    legalMoves.add(c);
-                }
-                legalMoves.add(crawler.enemyPiece.position);
-            } }
-        return legalMoves;
 
+            //filter moves
+            ArrayList<Coord> temp = new ArrayList<>();
+            if(pinnedState != pinnedTo.NOT_PINNED) {
+                for(Coord c: legalMoves) {
+                    for(Coord c2: crawler.emptySpaces.values()) {
+                        System.out.println("empty spot " + c2.notation);
+                        if(c.notation.charAt(0) == c2.notation.charAt(0) && c.notation.charAt(1) == c2.notation.charAt(1)) {
+                            temp.add(c);
+                        }
+                    }
+                    if(crawler.enemyPiece.position.notation.charAt(0) == c.notation.charAt(0) && crawler.enemyPiece.position.notation.charAt(1) == c.notation.charAt(1)) {
+                        temp.add(c);
+                    }
+                }
+                return temp;
+            }
+        }
+        return legalMoves;
     }
 
     public void getKnightMoves(Piece p) {

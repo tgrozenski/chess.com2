@@ -1,15 +1,9 @@
 TODO 
 
-PHASE 1 Complete game as an over the board game
-
 PHASE 2 Enforce the rules of Chess
 
-- Implement a check for pins to validate move
-
-    - locate a threat create a piece variable for it
-    - 
-
-    
+- filter moves
+ 
 - Pieces from moving to put the king in check
 
 - Implement checkmate

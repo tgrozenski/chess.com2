@@ -21,44 +21,52 @@ public HashMap<String, Coord> teamSpaces = new HashMap<>();
 public HashMap<String, Coord> emptySpaces = new HashMap<>();
 public Piece enemyPiece;
 public Piece king;
-        
-public pinnedTo relationToKing(Piece p, Piece King) {
 
+public pinnedTo relationToKing(Piece p, Piece King) {
     crawlSpaces(p, pinnedTo.RIGHT);
-    if(king != null) {
+    if(checkForPin()) {
         return pinnedTo.LEFT;
     }
     crawlSpaces(p, pinnedTo.LEFT);
-    if(king != null) {
+    if(checkForPin()) {
         return pinnedTo.RIGHT;
     }
     crawlSpaces(p, pinnedTo.TOP);
-    if(king != null) {
+    if(checkForPin()) {
         return pinnedTo.BOTTOM;
     }
     crawlSpaces(p, pinnedTo.BOTTOM);
-    if(king != null) {
+    if(checkForPin()) {
         return pinnedTo.TOP;
     }
     crawlSpaces(p, pinnedTo.TOP_LEFT);
-    if(king != null) {
+    if(checkForPin()) {
         return pinnedTo.BOTTOM_RIGHT;
     }
     crawlSpaces(p, pinnedTo.BOTTOM_RIGHT);
-    if(king != null) {
+    if(checkForPin()) {
         return pinnedTo.TOP_LEFT;
     }
     crawlSpaces(p, pinnedTo.BOTTOM_LEFT);
-    if(king != null) {
+    if(checkForPin()) {
         return pinnedTo.TOP_RIGHT;
     }
     crawlSpaces(p, pinnedTo.TOP_RIGHT);
-    if(king != null) {
+    if(checkForPin()) {
         return pinnedTo.BOTTOM_LEFT;
     }
-    return pinnedTo.NOT_PINNED;
-}
+    return pinnedTo.NOT_PINNED; }
 
+private boolean checkForPin() {
+    if(king != null && teamSpaces.size() == 1 && enemyPiece == null) {
+        clearAll();
+        return true;
+    }
+    else {
+        clearAll();
+        return false;
+    }
+}
 public Space getSpace(pinnedTo pinState, Coord p) {
     switch (pinState) {
         case RIGHT:
@@ -81,22 +89,24 @@ public Space getSpace(pinnedTo pinState, Coord p) {
             return null;
     }
 }
+
 public void crawlSpaces (Piece p, pinnedTo pinState) {
     clearAll();
+    Coord pos = p.position;
     for(int i = 0; i < 7; i++) {
-        Space s = getSpace(pinState, p.position);
-
-        if(s != null) {
-            Coord pos = new Coord(s.XPOS, s.YPOS);
+        Space s = getSpace(pinState, pos);
+        if(s != null && pos != null) {
+            pos = new Coord(s.XPOS, s.YPOS);
             Piece current = s.currentPiece;
 
             if(current == null) {
-                emptySpaces.put(pos + "", pos);
+                emptySpaces.put(pos.notation, pos);
             } 
             else if(current.color == p.color) {
-                teamSpaces.put(pos + "", pos);
+                teamSpaces.put(pos.notation, pos);
                 if(current.pieceType == 'k') {
                     king = current;
+                    break;
                 }
             }
             else {
@@ -104,6 +114,12 @@ public void crawlSpaces (Piece p, pinnedTo pinState) {
                 break;
             }
         }
+        else {
+            break;
+        }
+    }
+    for(Coord c: emptySpaces.values()) {
+        System.out.println("empty space " + c.notation);
     }
 }
 
@@ -113,4 +129,20 @@ public void clearAll() {
     emptySpaces.clear();
     teamSpaces.clear();
 }
+
+public boolean threatPresent(pinnedTo state, Piece enemy) {
+    if(state == pinnedTo.RIGHT || state == pinnedTo.LEFT || state == pinnedTo.BOTTOM || state == pinnedTo.TOP) {
+        if(enemy.pieceType == 'r' || enemy.pieceType == 'q') {
+            return true;
+        }
+    }
+    else if(state == pinnedTo.TOP_LEFT || state == pinnedTo.TOP_RIGHT || state == pinnedTo.BOTTOM_LEFT || state == pinnedTo.BOTTOM_RIGHT) {
+        if(enemy.pieceType == 'b' || enemy.pieceType == 'q') {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 }
