@@ -1,5 +1,6 @@
 package chess;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class RuleManager {
 
@@ -40,18 +41,19 @@ public class RuleManager {
             }
         }
 
+        ArrayList<Coord> temp = new ArrayList<>();
         if(p.pieceType != 'k') {
             GameState gs = new GameState();
             Crawler crawler = new Crawler();
 
             //determine king relationship
             pinnedTo pinnedState = pinnedTo.NOT_PINNED;
-            pinnedTo relation = crawler.relationToKing(p, gs.getKing(p.color));
+            pinnedTo relation = crawler.relationToKing(p.position, gs.getKing(p.color));
             System.out.println("KING RELATION "  + relation);
 
             //determine pin
             if(relation != pinnedTo.NOT_PINNED) {
-                crawler.crawlSpaces(p, relation);
+                crawler.crawlSpaces(p.color, p.position, relation);
                 if(crawler.enemyPiece != null) {
                     if(crawler.threatPresent(relation, crawler.enemyPiece) && crawler.teamSpaces.size() == 0) {
                         pinnedState = relation; 
@@ -61,7 +63,6 @@ public class RuleManager {
             System.out.println("PINNED STATE " + pinnedState);
 
             //filter moves
-            ArrayList<Coord> temp = new ArrayList<>();
             if(pinnedState != pinnedTo.NOT_PINNED) {
                 for(Coord c: legalMoves) {
                     for(Coord c2: crawler.emptySpaces.values()) {
@@ -77,6 +78,32 @@ public class RuleManager {
                 return temp;
             }
         }
+        else {
+            //piece is king
+            Crawler crawler = new Crawler();
+            for(Coord c: legalMoves) {
+                //establish bad squares
+                pinnedTo relation = crawler.relationToKing(c, p);
+                System.out.println("legal moves " + c.notation + "  " + relation);
+
+                Threat threat = crawler.getEnemy(c, p.color);
+                if(threat == null) {
+                    System.out.println("Enemy is null");
+                }
+                else if(crawler.teamSpaces.size() == 0){
+                    System.out.println("Current Enemy" + crawler.enemyPiece);
+                    if(crawler.threatPresent(threat.state, threat.piece)) {
+                    temp.add(c);
+                    }
+                }
+            }
+            //filter
+            for(Coord c: temp) {
+                System.out.println("Moves to be removed " + c.notation );
+                legalMoves.remove(c);
+            }
+        }
+
         return legalMoves;
     }
 

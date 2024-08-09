@@ -1,5 +1,7 @@
 package chess;
 import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 enum pinnedTo {
     RIGHT,
@@ -19,39 +21,40 @@ public class Crawler {
 Board board = new Board();
 public HashMap<String, Coord> teamSpaces = new HashMap<>();
 public HashMap<String, Coord> emptySpaces = new HashMap<>();
+HashSet<Piece> enemigos = new HashSet<>();
 public Piece enemyPiece;
 public Piece king;
 
-public pinnedTo relationToKing(Piece p, Piece King) {
-    crawlSpaces(p, pinnedTo.RIGHT);
+public pinnedTo relationToKing(Coord p, Piece King) {
+    crawlSpaces(King.color, p, pinnedTo.RIGHT);
     if(checkForPin()) {
         return pinnedTo.LEFT;
     }
-    crawlSpaces(p, pinnedTo.LEFT);
+    crawlSpaces(King.color, p, pinnedTo.LEFT);
     if(checkForPin()) {
         return pinnedTo.RIGHT;
     }
-    crawlSpaces(p, pinnedTo.TOP);
+    crawlSpaces(King.color, p, pinnedTo.TOP);
     if(checkForPin()) {
         return pinnedTo.BOTTOM;
     }
-    crawlSpaces(p, pinnedTo.BOTTOM);
+    crawlSpaces(King.color, p, pinnedTo.BOTTOM);
     if(checkForPin()) {
         return pinnedTo.TOP;
     }
-    crawlSpaces(p, pinnedTo.TOP_LEFT);
+    crawlSpaces(King.color, p, pinnedTo.TOP_LEFT);
     if(checkForPin()) {
         return pinnedTo.BOTTOM_RIGHT;
     }
-    crawlSpaces(p, pinnedTo.BOTTOM_RIGHT);
+    crawlSpaces(King.color, p, pinnedTo.BOTTOM_RIGHT);
     if(checkForPin()) {
         return pinnedTo.TOP_LEFT;
     }
-    crawlSpaces(p, pinnedTo.BOTTOM_LEFT);
+    crawlSpaces(King.color, p, pinnedTo.BOTTOM_LEFT);
     if(checkForPin()) {
         return pinnedTo.TOP_RIGHT;
     }
-    crawlSpaces(p, pinnedTo.TOP_RIGHT);
+    crawlSpaces(King.color, p, pinnedTo.TOP_RIGHT);
     if(checkForPin()) {
         return pinnedTo.BOTTOM_LEFT;
     }
@@ -67,6 +70,7 @@ private boolean checkForPin() {
         return false;
     }
 }
+
 public Space getSpace(pinnedTo pinState, Coord p) {
     switch (pinState) {
         case RIGHT:
@@ -90,9 +94,8 @@ public Space getSpace(pinnedTo pinState, Coord p) {
     }
 }
 
-public void crawlSpaces (Piece p, pinnedTo pinState) {
+public void crawlSpaces (int color, Coord pos, pinnedTo pinState) {
     clearAll();
-    Coord pos = p.position;
     for(int i = 0; i < 7; i++) {
         Space s = getSpace(pinState, pos);
         if(s != null && pos != null) {
@@ -102,7 +105,7 @@ public void crawlSpaces (Piece p, pinnedTo pinState) {
             if(current == null) {
                 emptySpaces.put(pos.notation, pos);
             } 
-            else if(current.color == p.color) {
+            else if(current.color == color) {
                 teamSpaces.put(pos.notation, pos);
                 if(current.pieceType == 'k') {
                     king = current;
@@ -117,9 +120,6 @@ public void crawlSpaces (Piece p, pinnedTo pinState) {
         else {
             break;
         }
-    }
-    for(Coord c: emptySpaces.values()) {
-        System.out.println("empty space " + c.notation);
     }
 }
 
@@ -141,8 +141,51 @@ public boolean threatPresent(pinnedTo state, Piece enemy) {
             return true;
         }
     }
-
     return false;
 }
 
+private boolean enemyValid() {
+    if(enemyPiece != null && teamSpaces.size() == 0 && !enemigos.contains(enemyPiece)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+public Threat getEnemy(Coord p, int color) {
+    crawlSpaces(color, p, pinnedTo.RIGHT);
+    if(enemyValid()) {
+        return new Threat(pinnedTo.RIGHT, enemyPiece);
+    }
+    crawlSpaces(color, p, pinnedTo.LEFT);
+    if(enemyValid()) {
+        return new Threat(pinnedTo.LEFT, enemyPiece);
+    }
+    crawlSpaces(color, p, pinnedTo.TOP);
+    if(enemyValid()) {
+        return new Threat(pinnedTo.TOP, enemyPiece);
+    }
+    crawlSpaces(color, p, pinnedTo.BOTTOM);
+    if(enemyValid()) {
+        return new Threat(pinnedTo.TOP, enemyPiece);
+    }
+    crawlSpaces(color, p, pinnedTo.TOP_LEFT);
+    if(enemyValid()) {
+        return new Threat(pinnedTo.TOP_LEFT, enemyPiece);
+    }
+    crawlSpaces(color, p, pinnedTo.BOTTOM_RIGHT);
+    if(enemyValid()) {
+        return new Threat(pinnedTo.BOTTOM_RIGHT, enemyPiece);
+    }
+    crawlSpaces(color, p, pinnedTo.BOTTOM_LEFT);
+    if(enemyValid()) {
+        return new Threat(pinnedTo.BOTTOM_LEFT, enemyPiece);
+    }
+    crawlSpaces(color, p, pinnedTo.TOP_RIGHT);
+    if(enemyValid()) {
+        return new Threat(pinnedTo.TOP_RIGHT, enemyPiece);
+    }
+    return null;
+    }
 }
