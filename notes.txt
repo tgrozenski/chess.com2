@@ -1,10 +1,9 @@
 TODO 
 
 PHASE 2 Enforce the rules of Chess
-
-- filter moves
  
-- Pieces from moving to put the king in check
+- Filter king moves futher to prevent king from making illegal moves
+- Filter out from knight and pawn moves and other king
 
 - Implement checkmate
 

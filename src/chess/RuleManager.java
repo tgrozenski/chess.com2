@@ -1,6 +1,7 @@
 package chess;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.function.Supplier;
 
 public class RuleManager {
 
@@ -8,10 +9,9 @@ public class RuleManager {
     private Board board = new Board();
     private static final int WHITE = 0;
     private boolean highlightState;
-    
+    private HashMap<String, Supplier<Space>> commandList = new HashMap<>(); 
     
     public ArrayList<Coord> getLegalMoves(Piece p, boolean check, boolean highlight) {
-        // System.out.println("IN CHECK?" + checkForCheck(p));
         this.highlightState = highlight;
         switch(p.pieceType) {
             case 'k':
@@ -79,31 +79,15 @@ public class RuleManager {
             }
         }
         else {
-            //piece is king
-            Crawler crawler = new Crawler();
-            for(Coord c: legalMoves) {
-                //establish bad squares
-                pinnedTo relation = crawler.relationToKing(c, p);
-                System.out.println("legal moves " + c.notation + "  " + relation);
-
-                Threat threat = crawler.getEnemy(c, p.color);
-                if(threat == null) {
-                    System.out.println("Enemy is null");
-                }
-                else if(crawler.teamSpaces.size() == 0){
-                    System.out.println("Current Enemy" + crawler.enemyPiece);
-                    if(crawler.threatPresent(threat.state, threat.piece)) {
-                    temp.add(c);
+            ArrayList<Coord> restrictedMoves = this.getAllMoves(p.color);
+            for(Coord coord: restrictedMoves) {
+                for(int i = 0; i < legalMoves.size(); i++) {
+                    if(legalMoves.get(i).x == coord.x && legalMoves.get(i).y == coord.y) {
+                        legalMoves.remove(legalMoves.get(i));
                     }
                 }
             }
-            //filter
-            for(Coord c: temp) {
-                System.out.println("Moves to be removed " + c.notation );
-                legalMoves.remove(c);
-            }
         }
-
         return legalMoves;
     }
 
@@ -157,9 +141,9 @@ public class RuleManager {
                 if(s != null) {
                 bottomRightState = checkPieceTakeable(s, p.color);
                 bottomRight = new Coord(s.XPOS, s.YPOS);
+                }
             }
         }
-       }
     }
 
     private void getRookMoves(Piece p) {
@@ -220,19 +204,18 @@ public class RuleManager {
     }
 
     public void getKingMoves(Piece p, boolean check) {
-        // System.out.println("Piece in King moves " + p.position.x + " " + p.position.y);
         if(!check) {
             System.out.println("Can Castle Right? " + canCastleLeft(p));
             System.out.println("Can Castle left? " + canCastleRight(p));
         }
-            checkPiece(getBottomMove(p.position), p.color);
-            checkPiece(getTopMove(p.position), p.color);
-            checkPiece(getTopLeftMove(p.position), p.color);
-            checkPiece(getTopRightMove(p.position), p.color);
-            checkPiece(getBottomLeftMove(p.position), p.color);
-            checkPiece(getBottomRightMove(p.position), p.color);
-            checkPiece(getLeftMove(p.position), p.color);
-            checkPiece(getRightMove(p.position), p.color);
+        checkPiece(getBottomMove(p.position), p.color);
+        checkPiece(getTopMove(p.position), p.color);
+        checkPiece(getTopLeftMove(p.position), p.color);
+        checkPiece(getTopRightMove(p.position), p.color);
+        checkPiece(getBottomLeftMove(p.position), p.color);
+        checkPiece(getBottomRightMove(p.position), p.color);
+        checkPiece(getLeftMove(p.position), p.color);
+        checkPiece(getRightMove(p.position), p.color);
     }
 
     private boolean canCastleLeft(Piece p) {
@@ -303,8 +286,6 @@ public class RuleManager {
         }
     }
 
-
-
     private boolean checkPieceTakeable(Space s, int color) {
         if(s != null && s.currentPiece == null ) {
             legalMoves.add(new Coord(s.XPOS, s.YPOS));
@@ -335,6 +316,86 @@ public class RuleManager {
         if(s!= null && s.currentPiece == null) {
             legalMoves.add(new Coord(s.XPOS, s.YPOS));
         }
+    }
+
+    public ArrayList<Coord> getAllMoves(int color) {
+        ArrayList<Coord> allMoves = new ArrayList<>();
+        GameState gs = new GameState();
+        HashMap<String,Piece> boardPos = gs.getBoardPosition();
+
+        //temporarily remove the king to get the moves past the king
+        Piece King = gs.getKing(color);
+        Board.spacesArr[King.position.indexX][King.position.indexY].currentPiece = null;
+        
+        for(Piece p : boardPos.values()) {
+            if(p.color != color && p.pieceType != 'k' && p.pieceType != 'p') {
+                for(Coord move: p.getLegalMoves(false, false)) {
+                    allMoves.add(move);
+                }
+            }
+            else if(p.pieceType == 'p' && p.color != color) {
+                if(p.color == WHITE) {
+                    Space right = getTopRightMove(p.position);
+                    Space left = getTopLeftMove(p.position);
+                    if(right != null) {
+                        allMoves.add(new Coord(right.XPOS, right.YPOS));
+                    }
+                    if(left != null) {
+                        allMoves.add(new Coord(left.XPOS, left.YPOS));
+                    }
+                }
+                else {
+                    Space right = getBottomRightMove(p.position);
+                    Space left = getBottomLeftMove(p.position);
+                    if(right != null) {
+                    allMoves.add(new Coord(right.XPOS, right.YPOS));
+                    }
+                    if(left != null) {
+                    allMoves.add(new Coord(left.XPOS, left.YPOS));
+                    }
+                }
+            }
+            else if(p.pieceType == 'k' && p.color != color) {
+                ArrayList<Coord> array = new ArrayList<>();
+                array = returnKingMoves(p.position);
+                for(Coord c: array) {
+                    System.out.println("ENEMY KING MOVES" + c.notation);
+                    allMoves.add(c);
+                }
+            }
+        }
+        //put the king back in
+        Board.spacesArr[King.position.indexX][King.position.indexY].currentPiece = King;
+
+        return allMoves;
+    }
+    public void initialzeCommandMap(Coord position) {
+        commandList.put("br", () -> getBottomRightMove(position));
+        commandList.put("t", () -> getTopMove(position));
+        commandList.put("tl", () -> getTopLeftMove(position));
+        commandList.put("tr", () -> getTopRightMove(position));
+        commandList.put("bl", () -> getBottomLeftMove(position));
+        commandList.put("l", () -> getLeftMove(position));
+        commandList.put("r", () -> getRightMove(position));
+        commandList.put("b", () -> getBottomMove(position));
+    }
+
+    private ArrayList<Coord> returnKingMoves(Coord position) {
+       ArrayList<Coord> arr = new ArrayList<>();
+       Space s = getBottomRightMove(position);
+       if(s != null) {
+        arr.add(new Coord(s.XPOS, s.YPOS));
+       }
+        String[] directions = { "br", "t", "tl", "tr", "bl", "bl", "l", "r", "b" };
+        initialzeCommandMap(position);  
+
+        for(String dir: directions) {
+            Space space = commandList.get(dir).get();
+            if(space != null) {
+                arr.add(new Coord(space.XPOS, space.YPOS));
+            }
+        }
+       return arr;
     }
 
     private Space getBottomRightMove(Coord cord) { return board.getSpaceFromCoord(new Coord(cord.x + 100, cord.y + 100)); }

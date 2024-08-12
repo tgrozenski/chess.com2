@@ -1,7 +1,7 @@
 package chess;
 import java.util.HashMap;
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.ArrayList;
 
 enum pinnedTo {
     RIGHT,
@@ -144,11 +144,44 @@ public boolean threatPresent(pinnedTo state, Piece enemy) {
     return false;
 }
 
+public ArrayList<Coord> getSpacesTillTeamPiece(Coord pos, pinnedTo direction, int color) {
+    ArrayList<Coord> spaces = new ArrayList<>();
+    clearAll();
+    for(int i = 0; i < 7; i++) {
+        Space s = getSpace(direction, pos);
+        if(s != null || pos != null) {
+            pos = new Coord(s.XPOS, s.YPOS);
+            Piece current = s.currentPiece;
+            if(current == null) {
+                spaces.add(pos);
+            } 
+            else if(current.color == color) {
+                break;
+            }
+            else {
+                this.enemyPiece = s.currentPiece;
+                break;
+            }
+        }
+        else {
+            break;
+        }
+    }
+    return spaces;
+}
+
 private boolean enemyValid() {
-    if(enemyPiece != null && teamSpaces.size() == 0 && !enemigos.contains(enemyPiece)) {
-        return true;
+    if(enemyPiece != null && teamSpaces.size() == 0) {
+        if(enemyPiece.pieceType != 'p' || enemyPiece.pieceType != 'n') {
+            System.out.println("Enemy Valid " + enemyPiece.notation);
+            return true;
+        }
+        else {
+            return false;
+        }
     }
     else {
+        System.out.println("Enemy is invalid");
         return false;
     }
 }
