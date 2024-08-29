@@ -2,16 +2,15 @@ TODO
 
 PHASE 2 Enforce the rules of Chess
  
-- Filter king moves futher to prevent king from making illegal moves
-- Filter out from knight and pawn moves and other king
+- in check filter down to moves that block or move the king away from check
 
-- Implement checkmate
+- if no moves are present period return  checkmate 
+
 
 - Implememnt turns in gameState
 
-           Bugs
-    - Fix en passant bug white is being allowed to take other white pieces
-    - pawns taking backwards
+Bugs
+
 
 REFACTOR NOTES: 
 

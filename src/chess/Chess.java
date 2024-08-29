@@ -118,6 +118,7 @@ public class Chess {
         Space touchedSpace = tempBoard.getSpaceFromCoord(new Coord(roundDownNearest100(e.getX()), roundDownNearest100(e.getY())));
         Coord touchedCoord = new Coord(touchedSpace.XPOS, touchedSpace.YPOS);
 
+        //initialize target piece if not null
         Piece selectedPiece = gameState.getPreviousPiece();
         Piece target = null;
         if(tempBoard.getSpaceFromCoord(touchedCoord).currentPiece != null) {
@@ -180,7 +181,7 @@ public class Chess {
             }
             
             else {
-                System.out.println("Standard Move Detected  Previous Piece: "); 
+                System.out.println("Standard Move Detected: "); 
                 if(gameState.getPreviousMovedPiece() != null) {
                     System.out.println("Previously Moved Piece " + gameState.getPreviousMovedPiece().notation);
                 }
@@ -189,6 +190,7 @@ public class Chess {
                 Piece newPiece = new Piece(newNotation, false, true);
                 newPiece.hasMoved = true;
                 newPiece.moveCount += gameState.getPreviousPiece().moveCount + 1;
+
 
                 gameState.removePiece(selectedPiece.notation);
                 try { gameState.removePiece(target.notation); } catch (Exception ex) {}
@@ -231,11 +233,11 @@ public class Chess {
            if(current.pieceType == 'k') {
                 if(current.color == 0) {
                     gameState.setWhiteCheckStatus(true);
-                    System.out.println("WHITE IN CHECK ");
+                    System.out.println("White Check status: " + gameState.getWhiteCheckStatus());
                 }
                 else {
                     gameState.setBlackCheckStatus(true);
-                    System.out.println("BLACK IN CHECK ");
+                    System.out.println("Black Check status " + gameState.getBlackCheckStatus());
                 }
            }
         } catch (Exception e) {}

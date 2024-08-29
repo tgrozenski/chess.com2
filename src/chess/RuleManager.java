@@ -110,6 +110,28 @@ public class RuleManager {
         }
     }
 
+    public boolean knightPresent(Piece p) {
+        Coord topRight = new Coord(p.position.x + 100, p.position.y - 200);
+        Coord topLeft = new Coord(p.position.x - 100, p.position.y - 200);
+        Coord bottomRight= new Coord(p.position.x + 100, p.position.y + 200);
+        Coord bottomLeft = new Coord(p.position.x - 100, p.position.y + 200);
+        Coord middleLeftA = new Coord(p.position.x - 200, p.position.y + 100);
+        Coord middleLeftB = new Coord(p.position.x - 200, p.position.y - 100);
+        Coord middleRightA = new Coord(p.position.x + 200, p.position.y + 100);
+        Coord middleRightB = new Coord(p.position.x + 200, p.position.y - 100);
+        Coord[] arr = { topLeft, topRight, bottomRight, bottomLeft, middleLeftA, middleLeftB, middleRightA, middleRightB }; 
+
+        for(Coord c: arr) {
+            if(board.getSpaceFromCoord(c) != null) {
+                Piece piece = board.getSpaceFromCoord(c).currentPiece; 
+                if(piece != null && piece.color == p.color && piece.pieceType == 'n') {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private void getBishopMoves(Piece p) {
         //potential multithreading available
         Coord right = p.position, left = p.position, bottomLeft = p.position, bottomRight = p.position;
@@ -260,6 +282,23 @@ public class RuleManager {
         return false;
     }
 
+    private boolean checkEnPassantValid(Piece p, Space RorL, Piece previousPiece) {
+        int valid = 0;
+        if(RorL!= null && RorL.currentPiece!= null && previousPiece!= null ) {
+            System.out.println(p.color+ " " + RorL.currentPiece.color + " " + previousPiece.color);
+            valid = (RorL.currentPiece.pieceType == p.pieceType) ? valid : 1;
+            valid = (RorL.currentPiece.moveCount == 1) ? valid : 1;
+            valid = (previousPiece.notation == RorL.currentPiece.notation) ? valid : 1;
+            valid = (p.color != previousPiece.color) ? valid : 1; 
+            valid = (p.position.y == 400 || p.position.y == 500) ? valid : 1; 
+        }
+        else {
+            valid = 1;
+        }
+        System.out.println("Valid " + valid);
+        return (valid != 0) ? false : true;
+    }
+
     private void auPassante(Piece p) {
         Coord currentLoc = p.position;
         Space right = board.getSpaceFromCoord(new Coord(currentLoc.x + 100, currentLoc.y));
@@ -267,25 +306,14 @@ public class RuleManager {
         GameState gs = new GameState();
         Piece previousMovedPiece = gs.getPreviousMovedPiece();
 
-        if(right != null && right.currentPiece!= null && right.currentPiece.pieceType == p.pieceType && right.currentPiece.moveCount == 1){
-            if(previousMovedPiece!= null && previousMovedPiece.notation == right.currentPiece.notation 
-                && p.position.y == 400 || p.position.y == 500) {
-                System.out.println("Match is valid move count " + right.currentPiece.moveCount);
-                legalMoves.add(new Coord(right.XPOS, right.YPOS));
-            }
+        if(checkEnPassantValid(p, right, previousMovedPiece)) {
+            legalMoves.add(new Coord(right.XPOS, right.YPOS));
         }
-        else if(left!= null && left.currentPiece!= null && left.currentPiece.pieceType == p.pieceType && left.currentPiece.moveCount == 1){
-            if(previousMovedPiece!= null && previousMovedPiece.notation == left.currentPiece.notation
-                && p.position.y == 400 || p.position.y == 500) {
-                System.out.println("Match is valid");
-                legalMoves.add(new Coord(left.XPOS, left.YPOS));
-            }
-        }
-        else {
-            System.out.println("No Match");
+        if(checkEnPassantValid(p, left, previousMovedPiece)) {
+            legalMoves.add(new Coord(left.XPOS, left.YPOS));
         }
     }
-
+    
     private boolean checkPieceTakeable(Space s, int color) {
         if(s != null && s.currentPiece == null ) {
             legalMoves.add(new Coord(s.XPOS, s.YPOS));
@@ -300,11 +328,50 @@ public class RuleManager {
 
     private void checkPiece(Space s, int originalPieceColor) {
         if(s != null && s.currentPiece != null && s.currentPiece.color != originalPieceColor && s.XPOS <= 800 && s.YPOS >= 100) {
-            legalMoves.add(new Coord(s.XPOS, s.YPOS));
+            if(!findDefender(s.currentPiece)) {
+                legalMoves.add(new Coord(s.XPOS, s.YPOS));
+            }
         }
         else if(s!= null && s.currentPiece == null)  {
             legalMoves.add(new Coord(s.XPOS, s.YPOS));
         }
+    }
+    private boolean findDefender(Piece target) {
+        GameState gs = new GameState();
+        Crawler crawler = new Crawler();
+        Piece king = gs.getPreviousMovedPiece();
+        System.out.println("King: " + king.notation + " target " + target.notation);
+
+        //check for King/Rook
+        for(pinnedTo pin: pinnedTo.values()) {
+            crawler.crawlSpaces(target.color, target.position, pin);
+            System.out.println();
+            for (Coord c: crawler.teamSpaces.values()) {
+                if(board.getSpaceFromCoord(c).currentPiece != null) {
+                    Piece p = board.getSpaceFromCoord(c).currentPiece;
+                    if(p.pieceType == 'q') {
+                        return true;
+                    }
+                    else if(pin == pinnedTo.LEFT || pin == pinnedTo.RIGHT || pin == pinnedTo.BOTTOM || pin == pinnedTo.TOP) {
+                        if(p.pieceType == 'r') {
+                            return true;
+                        }
+                    }
+                    else if(pin == pinnedTo.TOP_LEFT || pin == pinnedTo.TOP_RIGHT || pin == pinnedTo.BOTTOM_LEFT || pin == pinnedTo.BOTTOM_RIGHT) {
+                        if(p.pieceType == 'b') {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        //check for knight
+        if(knightPresent(target)) {
+            return true;
+        }
+
+        return false;
     }
 
     private void checkPiecePawnTake(Space s, int originalPieceColor) {
