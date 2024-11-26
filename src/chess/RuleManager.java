@@ -49,7 +49,6 @@ public class RuleManager {
             //determine king relationship
             pinnedTo pinnedState = pinnedTo.NOT_PINNED;
             pinnedTo relation = crawler.relationToKing(p.position, gs.getKing(p.color));
-            System.out.println("KING RELATION "  + relation);
 
             //determine pin
             if(relation != pinnedTo.NOT_PINNED) {
@@ -60,13 +59,11 @@ public class RuleManager {
                     }
                 }
             }
-            System.out.println("PINNED STATE " + pinnedState);
 
             //filter moves
             if(pinnedState != pinnedTo.NOT_PINNED) {
                 for(Coord c: legalMoves) {
                     for(Coord c2: crawler.emptySpaces.values()) {
-                        System.out.println("empty spot " + c2.notation);
                         if(c.notation.charAt(0) == c2.notation.charAt(0) && c.notation.charAt(1) == c2.notation.charAt(1)) {
                             temp.add(c);
                         }
@@ -105,7 +102,6 @@ public class RuleManager {
         for(Coord c: arr) {
             if(board.getSpaceFromCoord(c) != null) {
                 checkPiece(board.getSpaceFromCoord(c), p.color);
-                System.out.println(c.notation);
             }
         }
     }
@@ -227,8 +223,8 @@ public class RuleManager {
 
     public void getKingMoves(Piece p, boolean check) {
         if(!check) {
-            System.out.println("Can Castle Right? " + canCastleLeft(p));
-            System.out.println("Can Castle left? " + canCastleRight(p));
+            canCastleLeft(p);
+            canCastleRight(p);
         }
         checkPiece(getBottomMove(p.position), p.color);
         checkPiece(getTopMove(p.position), p.color);
@@ -271,6 +267,7 @@ public class RuleManager {
             Space right1 = board.getSpaceFromCoord(new Coord(currentLoc.x + 100, currentLoc.y));
             Space right2 = board.getSpaceFromCoord(new Coord(currentLoc.x + 200, currentLoc.y));
             Space right3 = board.getSpaceFromCoord(new Coord(currentLoc.x + 300, currentLoc.y));
+
             if(right1.currentPiece == null && right2.currentPiece == null && right3.currentPiece != null 
             && right3.currentPiece.pieceType == 'r' && right3.currentPiece.color == p.color) {
                 legalMoves.add(right3.currentPiece.position);
@@ -295,7 +292,6 @@ public class RuleManager {
         else {
             valid = 1;
         }
-        System.out.println("Valid " + valid);
         return (valid != 0) ? false : true;
     }
 
@@ -340,12 +336,10 @@ public class RuleManager {
         GameState gs = new GameState();
         Crawler crawler = new Crawler();
         Piece king = gs.getPreviousMovedPiece();
-        System.out.println("King: " + king.notation + " target " + target.notation);
 
         //check for King/Rook
         for(pinnedTo pin: pinnedTo.values()) {
             crawler.crawlSpaces(target.color, target.position, pin);
-            System.out.println();
             for (Coord c: crawler.teamSpaces.values()) {
                 if(board.getSpaceFromCoord(c).currentPiece != null) {
                     Piece p = board.getSpaceFromCoord(c).currentPiece;
@@ -426,7 +420,6 @@ public class RuleManager {
                 ArrayList<Coord> array = new ArrayList<>();
                 array = returnKingMoves(p.position);
                 for(Coord c: array) {
-                    System.out.println("ENEMY KING MOVES" + c.notation);
                     allMoves.add(c);
                 }
             }

@@ -18,7 +18,6 @@ public class Chess {
 
     private static void createAndShowGUI() {
 
-        System.out.println("CREATING AND SHOWING GUI");
         JFrame f = new JFrame("Chess.com 2");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //initialize the board only once 
@@ -38,7 +37,6 @@ public class Chess {
                     Board board = new Board();
                     
                     gameState.getLegalMoves().forEach( c -> {
-                    // System.out.println("Legal Moves " + c.x + " " + c.y + " " + c.notation + " Count:  " + counter);
                     if (c.highlight == true) {
                         try {
                             board.highlightSquare(g, "00" + c.notation);
@@ -91,8 +89,6 @@ public class Chess {
         };
         for(String str: startingPosition) {
             gameState.addPiece(str, new Piece(str, false, false));
-            // Piece current = boardPosition.get(str);
-            // System.out.println(current.notation + " " + current.position.indexX + " " + current.position.indexY  + " " + current.position.x + current.position.y);
         }
     }
 
@@ -127,7 +123,7 @@ public class Chess {
 
         if(selectedPiece != null  && validateMove(touchedCoord)) {
             //castling
-            if(target!= null && target.color == selectedPiece.color) {
+            if(target != null && target.color == selectedPiece.color) {
                 Coord newKing = null, newRook = null;
                 Piece king, rook;
 
@@ -165,8 +161,6 @@ public class Chess {
             else if(target != null && target.pieceType == 'p' && selectedPiece.pieceType == 'p' && selectedPiece.color != target.pieceType
                 && target.position.y == selectedPiece.position.y 
                 ) {
-
-                System.out.println("EN PASSANT");
                 int val;
                 if(target.color == 1) { val = -100; }
                 else { val = 100; } 
@@ -181,16 +175,14 @@ public class Chess {
             }
             
             else {
-                System.out.println("Standard Move Detected: "); 
-                if(gameState.getPreviousMovedPiece() != null) {
-                    System.out.println("Previously Moved Piece " + gameState.getPreviousMovedPiece().notation);
-                }
+                // if(gameState.getPreviousMovedPiece() != null) {
+                //     System.out.println("Previously Moved Piece " + gameState.getPreviousMovedPiece().notation);
+                // }
 
                 String newNotation = tempBoard.getNewNotation(gameState.getPreviousPiece(), touchedCoord);
                 Piece newPiece = new Piece(newNotation, false, true);
                 newPiece.hasMoved = true;
                 newPiece.moveCount += gameState.getPreviousPiece().moveCount + 1;
-
 
                 gameState.removePiece(selectedPiece.notation);
                 try { gameState.removePiece(target.notation); } catch (Exception ex) {}
@@ -208,10 +200,18 @@ public class Chess {
             gameState.clearLegalMoves();
             panel.repaint();
         }
-
+        // clicking a piece for the first time 
         else {
-            System.out.println("user is clicking a piece for the first time");
+            // stop if not player's turn
+            if (touchedSpace.currentPiece.color != gameState.getCurrentTurn()) {
+                return;
+            }
+            boolean status = (touchedSpace.currentPiece.color == 0) ? gameState.getWhiteCheckStatus() : gameState.getBlackCheckStatus();
 
+            //stop if a non king piece is selected while king is in check
+            if (status && touchedSpace.currentPiece.pieceType != 'k') {
+                return;
+            }
             if(gameState.getPreviousMovedPiece() != null) {
                 System.out.println("Previously Moved Piece " + gameState.getPreviousMovedPiece().notation);
             }
@@ -223,23 +223,30 @@ public class Chess {
             System.out.println("Current Move Count" + touchedSpace.currentPiece.moveCount);
             panel.repaint();
         }
+        
+        // Set current move to the opposing color
+        if (gameState.getPreviousMovedPiece() != null) {
+            gameState.setCurrentTurn((gameState.getPreviousMovedPiece().color == 0) ? 1 : 0);
+            // gameState.setBlackCheckStatus(false);
+            // gameState.setWhiteCheckStatus(false);
+        }
     }
     public static void checkForCheck(Piece p) {
        System.out.println("CHECKING FOR CHECK " + p.notation);
        gameState.setLegalMoves(p.getLegalMoves(false, false));
        for(Coord c: gameState.getLegalMoves()) {
-        try {
-            Piece current = board.getSpaceFromCoord(c).currentPiece;
-           if(current.pieceType == 'k') {
-                if(current.color == 0) {
-                    gameState.setWhiteCheckStatus(true);
-                    System.out.println("White Check status: " + gameState.getWhiteCheckStatus());
+            try {
+                Piece current = board.getSpaceFromCoord(c).currentPiece;
+                if(current.pieceType == 'k') {
+                        if(current.color == 0) {
+                            gameState.setWhiteCheckStatus(true);
+                            System.out.println("White Check status: " + gameState.getWhiteCheckStatus());
+                        }
+                        else {
+                            gameState.setBlackCheckStatus(true);
+                            System.out.println("Black Check status " + gameState.getBlackCheckStatus());
+                        }
                 }
-                else {
-                    gameState.setBlackCheckStatus(true);
-                    System.out.println("Black Check status " + gameState.getBlackCheckStatus());
-                }
-           }
         } catch (Exception e) {}
        }
        gameState.clearLegalMoves();
