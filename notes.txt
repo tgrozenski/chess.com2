@@ -1,18 +1,16 @@
 TODO 
 
-PHASE 2 Enforce the rules of Chess
- 
-- Implement logic to uncheck king after the king moves away 
-
 - if no moves are present period return  checkmate 
 
 
-- Implememnt turns in gameState
-    
-Bugs
-
+BUGS
 - King needs to check if spaces in between castling are empty before castling
 
+- Implement logic to uncheck king after the king moves away 
+
+- Logic for other moves to take king out of check
+
+- Knights not able to take certain pieces for some reason
 
 REFACTOR NOTES: 
 

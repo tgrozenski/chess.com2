@@ -47,22 +47,22 @@ public class Piece {
         String path = "";
         switch(this.pieceType) {
             case 'k':
-                path = "/images/black_king.png";
+                path = "../images/black_king.png";
                 break;
             case 'q':
-                path = "/images/black_queen.png";
+                path = "../images/black_queen.png";
                 break;
             case 'r':
-                path = "/images/black_rook.png";
+                path = "../images/black_rook.png";
                 break;
             case 'b':
-                path = "/images/black_bishop.png";
+                path = "../images/black_bishop.png";
                 break;
             case 'n': 
-                path = "/images/black_knight.png";
+                path = "../images/black_knight.png";
                 break;
             case 'p':
-                path ="/images/black_pawn.png";
+                path ="../images/black_pawn.png";
                 break;
         }
         return path;
