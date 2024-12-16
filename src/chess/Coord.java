@@ -6,7 +6,7 @@ public class Coord {
     public int indexX;
     public boolean highlight = true;
     public int indexY;
-    String notation;
+    public String notation;
 
     Coord(int x, int y) {
         this.x = x;
@@ -24,5 +24,14 @@ public class Coord {
         str += (char) (96 + (x/100));
         str += 9 - (y/100);
         return str;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+    if (!(other instanceof Coord)) {
+            return false;
+        }
+        Coord that = (Coord) other;
+        return this.notation.equals(that.notation);
     }
 }

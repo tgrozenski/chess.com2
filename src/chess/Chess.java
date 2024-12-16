@@ -154,7 +154,8 @@ public class Chess {
                 } catch (Exception except) {except.printStackTrace();}
 
                 gameState.clearLegalMoves();
-                gameState.setPreviousPiece(null);
+                gameState.setPreviousMovedPiece(king);
+                System.out.println("setting previous piece here " + king.notation);
                 panel.repaint();
 
             }
@@ -174,7 +175,7 @@ public class Chess {
                 gameState.setPreviousPiece(null);
                 panel.repaint();
             }
-            
+            // Normal move here 
             else {
                 // if(gameState.getPreviousMovedPiece() != null) {
                 //     System.out.println("Previously Moved Piece " + gameState.getPreviousMovedPiece().notation);
@@ -194,6 +195,7 @@ public class Chess {
                 checkForCheck(newPiece);
                 gameState.setPreviousMovedPiece(newPiece);
                 panel.repaint();
+
             }
         }
         else if(touchedSpace.currentPiece == null) {
@@ -209,46 +211,78 @@ public class Chess {
             }
 
             //stop if a non king piece is selected while king is in check
-            boolean status = (touchedSpace.currentPiece.color == 0) ? gameState.getWhiteCheckStatus() : gameState.getBlackCheckStatus();
+            int color = (touchedSpace.currentPiece.color == 0) ? 0 : 1;
+            boolean status = (color == 0) ? gameState.getWhiteCheckStatus() : gameState.getBlackCheckStatus();
+
             if (status && touchedSpace.currentPiece.pieceType != 'k') {
                 Crawler crawler = new Crawler();
                 Piece checkedKing = gameState.getKing(touchedSpace.currentPiece.color);
                 Threat enemy = crawler.getEnemy(checkedKing.position, checkedKing.color);
-                System.out.println("There is an enemy Piece " + enemy.piece.notation + " In this direction " + enemy.state);
 
+                gameState.setPreviousPiece(touchedSpace.currentPiece);
+
+                // get all moves and filter them down
                 ArrayList<Coord> moves = touchedSpace.currentPiece.getLegalMoves(false, true);
                 ArrayList<Coord> validMoves = crawler.getSpacesTillTeamPiece(checkedKing.position, enemy.state, gameState.getPreviousMovedPiece().color);
                 validMoves.add(enemy.piece.position);
-                for (int i = 0; i < moves.size(); i++) {
-                    if (!validMoves.contains(moves.get(i))) {
-                        moves.remove(moves.get(i));
-                    }
-                }
-                for (Coord move: moves) {
-                    System.out.println("FILTERED MOVE " + move.notation);
-                }
-                // gameState.setLegalMoves(moves);
-                return;
+                moves.retainAll(validMoves);
+                gameState.setLegalMoves(moves);
+                panel.repaint();
             }
-            if (gameState.getPreviousMovedPiece() != null) {
-                System.out.println("Previously Moved Piece " + gameState.getPreviousMovedPiece().notation);
+            else {
+                if (gameState.getPreviousMovedPiece() != null) {
+                    System.out.println("Previously Moved Piece " + gameState.getPreviousMovedPiece().notation);
+                }
+                try {
+                    gameState.setPreviousPiece(touchedSpace.currentPiece);
+                    gameState.setLegalMoves(touchedSpace.currentPiece.getLegalMoves(false, true));
+                    System.out.println("CURRENT CLICKED PIECE: " + gameState.getPreviousPiece().notation);
+                } catch (Exception ex) {ex.printStackTrace();};
+                System.out.println("Current Move Count" + touchedSpace.currentPiece.moveCount);
+                panel.repaint();
             }
-            try {
-                gameState.setPreviousPiece(touchedSpace.currentPiece);
-                gameState.setLegalMoves(touchedSpace.currentPiece.getLegalMoves(false, true));
-                System.out.println("CURRENT CLICKED PIECE: " + gameState.getPreviousPiece().notation);
-            } catch (Exception ex) {ex.printStackTrace();};
-            System.out.println("Current Move Count" + touchedSpace.currentPiece.moveCount);
-            panel.repaint();
         }
         
         // Set current move to the opposing color
+        System.out.println("GS " + gameState.getPreviousMovedPiece().notation);
         if (gameState.getPreviousMovedPiece() != null) {
             gameState.setCurrentTurn((gameState.getPreviousMovedPiece().color == 0) ? 1 : 0);
-            // gameState.setBlackCheckStatus(false);
-            // gameState.setWhiteCheckStatus(false);
         }
+        // reevaluate any checks
+        reEvaluateCheck();
+
     }
+
+    public static void reEvaluateCheck() {
+        // Uncheck provided 
+        boolean whiteCheckStatus =  gameState.getWhiteCheckStatus();
+        boolean blackCheckStatus =  gameState.getBlackCheckStatus();
+        int colorChecked;
+        if (whiteCheckStatus) {
+            colorChecked = 0;
+        }
+        else if (blackCheckStatus) {
+            colorChecked = 1;
+        }
+        else {
+            return;
+        }
+
+        Piece checkedKing = gameState.getKing(colorChecked);
+        Crawler crawlie = new Crawler();
+        Threat enemy = crawlie.getEnemy(checkedKing.position, checkedKing.color);
+
+        if (enemy == null) {
+            if (colorChecked == 0) {
+                gameState.setWhiteCheckStatus(false);
+            }
+            else {
+                gameState.setBlackCheckStatus(false);
+            }
+        }
+
+    }
+
     public static void checkForCheck(Piece p) {
        System.out.println("CHECKING FOR CHECK " + p.notation);
        gameState.setLegalMoves(p.getLegalMoves(false, false));

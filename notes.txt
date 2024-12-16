@@ -4,13 +4,7 @@ TODO
 
 
 BUGS
-- King needs to check if spaces in between castling are empty before castling
-
-- Implement logic to uncheck king after the king moves away 
-
-- Logic for other moves to take king out of check
-
-- Knights not able to take certain pieces for some reason
+- King needs to check if spaces in between castling are safe before castling (no threats)
 
 REFACTOR NOTES: 
 
