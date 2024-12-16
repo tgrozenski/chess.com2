@@ -84,6 +84,8 @@ public class RuleManager {
                     }
                 }
             }
+
+            
         }
         return legalMoves;
     }
@@ -101,7 +103,7 @@ public class RuleManager {
 
         for(Coord c: arr) {
             if(board.getSpaceFromCoord(c) != null) {
-                checkPiece(board.getSpaceFromCoord(c), p.color);
+                checkPieceTakeable(board.getSpaceFromCoord(c), p.color);
             }
         }
     }
@@ -429,7 +431,7 @@ public class RuleManager {
 
         return allMoves;
     }
-    public void initialzeCommandMap(Coord position) {
+    public void initCommandMap(Coord position) {
         commandList.put("br", () -> getBottomRightMove(position));
         commandList.put("t", () -> getTopMove(position));
         commandList.put("tl", () -> getTopLeftMove(position));
@@ -447,7 +449,7 @@ public class RuleManager {
         arr.add(new Coord(s.XPOS, s.YPOS));
        }
         String[] directions = { "br", "t", "tl", "tr", "bl", "bl", "l", "r", "b" };
-        initialzeCommandMap(position);  
+        initCommandMap(position);  
 
         for(String dir: directions) {
             Space space = commandList.get(dir).get();

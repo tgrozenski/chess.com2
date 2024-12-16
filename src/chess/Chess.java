@@ -6,6 +6,7 @@ import javax.swing.JPanel;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.*;
+import java.util.ArrayList;
 
 public class Chess {
     static GameState gameState = new GameState();
@@ -121,9 +122,9 @@ public class Chess {
             target = tempBoard.getSpaceFromCoord(touchedCoord).currentPiece;
         }
 
-        if(selectedPiece != null  && validateMove(touchedCoord)) {
+        if (selectedPiece != null  && validateMove(touchedCoord)) {
             //castling
-            if(target != null && target.color == selectedPiece.color) {
+            if (target != null && target.color == selectedPiece.color) {
                 Coord newKing = null, newRook = null;
                 Piece king, rook;
 
@@ -158,11 +159,11 @@ public class Chess {
 
             }
             //en passant
-            else if(target != null && target.pieceType == 'p' && selectedPiece.pieceType == 'p' && selectedPiece.color != target.pieceType
+            else if (target != null && target.pieceType == 'p' && selectedPiece.pieceType == 'p' && selectedPiece.color != target.pieceType
                 && target.position.y == selectedPiece.position.y 
                 ) {
                 int val;
-                if(target.color == 1) { val = -100; }
+                if (target.color == 1) { val = -100; }
                 else { val = 100; } 
                 gameState.removePiece(target.notation);
                 gameState.removePiece(selectedPiece.notation);
@@ -206,13 +207,30 @@ public class Chess {
             if (touchedSpace.currentPiece.color != gameState.getCurrentTurn()) {
                 return;
             }
-            boolean status = (touchedSpace.currentPiece.color == 0) ? gameState.getWhiteCheckStatus() : gameState.getBlackCheckStatus();
 
             //stop if a non king piece is selected while king is in check
+            boolean status = (touchedSpace.currentPiece.color == 0) ? gameState.getWhiteCheckStatus() : gameState.getBlackCheckStatus();
             if (status && touchedSpace.currentPiece.pieceType != 'k') {
+                Crawler crawler = new Crawler();
+                Piece checkedKing = gameState.getKing(touchedSpace.currentPiece.color);
+                Threat enemy = crawler.getEnemy(checkedKing.position, checkedKing.color);
+                System.out.println("There is an enemy Piece " + enemy.piece.notation + " In this direction " + enemy.state);
+
+                ArrayList<Coord> moves = touchedSpace.currentPiece.getLegalMoves(false, true);
+                ArrayList<Coord> validMoves = crawler.getSpacesTillTeamPiece(checkedKing.position, enemy.state, gameState.getPreviousMovedPiece().color);
+                validMoves.add(enemy.piece.position);
+                for (int i = 0; i < moves.size(); i++) {
+                    if (!validMoves.contains(moves.get(i))) {
+                        moves.remove(moves.get(i));
+                    }
+                }
+                for (Coord move: moves) {
+                    System.out.println("FILTERED MOVE " + move.notation);
+                }
+                // gameState.setLegalMoves(moves);
                 return;
             }
-            if(gameState.getPreviousMovedPiece() != null) {
+            if (gameState.getPreviousMovedPiece() != null) {
                 System.out.println("Previously Moved Piece " + gameState.getPreviousMovedPiece().notation);
             }
             try {
