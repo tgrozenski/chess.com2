@@ -6,7 +6,7 @@ import javax.imageio.ImageIO;
 
 public class Board {
 
-    public static final int idthLength= 800;
+    public static final int widthLength= 800;
     public static final int spaceWidthLength = 100;
     public static final Color primaryColor = new Color(173, 216, 230);
     public static final Color secondaryColor = new Color(167, 199, 231);
@@ -16,8 +16,8 @@ public class Board {
     public static Piece lastPieceMoved;
 
     public Space[][] drawSpaces(Graphics g) {
-        for (int currentY = spaceWidthLength, outer = 0; currentY <= idthLength; currentY+=100, outer++) {
-            for(int currentX = spaceWidthLength, inner = 0; currentX <= idthLength; currentX+=100, inner++) {
+        for (int currentY = spaceWidthLength, outer = 0; currentY <= widthLength; currentY+=100, outer++) {
+            for(int currentX = spaceWidthLength, inner = 0; currentX <= widthLength; currentX+=100, inner++) {
                 g.setColor(currentColor);
                 g.fillRect(currentX, currentY, spaceWidthLength, spaceWidthLength); 
                 spacesArr[outer][inner] = new Space(currentColor, currentX, currentY);
@@ -32,12 +32,12 @@ public class Board {
         String iterator = "8";
         Font currentFont = g.getFont();
         g.setFont(currentFont.deriveFont(currentFont.getSize() * 2.5F)); 
-        for (int currentY = spaceWidthLength + 65; currentY <= idthLength + 100; currentY+=100) {
+        for (int currentY = spaceWidthLength + 65; currentY <= widthLength + 100; currentY+=100) {
             g.drawString(iterator, 50, currentY); 
             iterator = (Integer.parseInt(iterator) - 1) + "";
         }
         iterator = "a";
-        for (int currentX= spaceWidthLength + 35; currentX <= idthLength + 100; currentX+=100) {
+        for (int currentX= spaceWidthLength + 35; currentX <= widthLength + 100; currentX+=100) {
             g.drawString(iterator, currentX, 950); 
             int charValue = iterator.charAt(0); 
             iterator = String.valueOf((char) (charValue + 1));
@@ -114,7 +114,7 @@ public class Board {
         }
         else {
             spacesArr[c.indexX][c.indexY].currentPiece = p;
-            System.out.println("Updated Array: " + c.indexX + " " + c.indexY + " " +  spacesArr[c.indexX][c.indexY].currentPiece.notation);
+            // System.out.println("Updated Array: " + c.indexX + " " + c.indexY + " " +  spacesArr[c.indexX][c.indexY].currentPiece.notation);
         }
     }
 

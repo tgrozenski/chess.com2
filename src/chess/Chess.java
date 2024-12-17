@@ -21,8 +21,8 @@ public class Chess {
 
         JFrame f = new JFrame("Chess.com 2");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        //initialize the board only once 
 
+        //initialize the board only once 
         if(gameState.gameActive == false) {
             initializeBoard();
             gameState.gameActive = true;
@@ -128,10 +128,11 @@ public class Chess {
                 Coord newKing = null, newRook = null;
                 Piece king, rook;
 
-                if (target.position.x == 800) {
+                if (target.position.x == 800) { // Castling right
                     newKing = new Coord(selectedPiece.position.x + 200, selectedPiece.position.y);
                     newRook = new Coord(target.position.x - 200, target.position.y);
-                } else if(target.position.x == 100){
+                
+                } else if(target.position.x == 100) { // Castling left
                     newKing = new Coord(selectedPiece.position.x - 200, selectedPiece.position.y);
                     newRook = new Coord(target.position.x + 300, target.position.y);
                 }
@@ -155,7 +156,7 @@ public class Chess {
 
                 gameState.clearLegalMoves();
                 gameState.setPreviousMovedPiece(king);
-                System.out.println("setting previous piece here " + king.notation);
+                // System.out.println("setting previous piece here " + king.notation);
                 panel.repaint();
 
             }
@@ -199,7 +200,7 @@ public class Chess {
             }
         }
         else if(touchedSpace.currentPiece == null) {
-            System.out.println("user has not clicked a legal move, clear the board");
+            // System.out.println("user has not clicked a legal move, clear the board");
             gameState.clearLegalMoves();
             panel.repaint();
         }
@@ -230,21 +231,21 @@ public class Chess {
                 panel.repaint();
             }
             else {
-                if (gameState.getPreviousMovedPiece() != null) {
-                    System.out.println("Previously Moved Piece " + gameState.getPreviousMovedPiece().notation);
-                }
+                // if (gameState.getPreviousMovedPiece() != null) {
+                //     System.out.println("Previously Moved Piece " + gameState.getPreviousMovedPiece().notation);
+                // }
                 try {
                     gameState.setPreviousPiece(touchedSpace.currentPiece);
                     gameState.setLegalMoves(touchedSpace.currentPiece.getLegalMoves(false, true));
-                    System.out.println("CURRENT CLICKED PIECE: " + gameState.getPreviousPiece().notation);
+                    // System.out.println("CURRENT CLICKED PIECE: " + gameState.getPreviousPiece().notation);
                 } catch (Exception ex) {ex.printStackTrace();};
-                System.out.println("Current Move Count" + touchedSpace.currentPiece.moveCount);
+                // System.out.println("Current Move Count" + touchedSpace.currentPiece.moveCount);
                 panel.repaint();
             }
         }
         
         // Set current move to the opposing color
-        System.out.println("GS " + gameState.getPreviousMovedPiece().notation);
+        // System.out.println("GS " + gameState.getPreviousMovedPiece().notation);
         if (gameState.getPreviousMovedPiece() != null) {
             gameState.setCurrentTurn((gameState.getPreviousMovedPiece().color == 0) ? 1 : 0);
         }
@@ -284,7 +285,7 @@ public class Chess {
     }
 
     public static void checkForCheck(Piece p) {
-       System.out.println("CHECKING FOR CHECK " + p.notation);
+    //    System.out.println("CHECKING FOR CHECK " + p.notation);
        gameState.setLegalMoves(p.getLegalMoves(false, false));
        for(Coord c: gameState.getLegalMoves()) {
             try {
@@ -292,11 +293,11 @@ public class Chess {
                 if(current.pieceType == 'k') {
                         if(current.color == 0) {
                             gameState.setWhiteCheckStatus(true);
-                            System.out.println("White Check status: " + gameState.getWhiteCheckStatus());
+                            // System.out.println("White Check status: " + gameState.getWhiteCheckStatus());
                         }
                         else {
                             gameState.setBlackCheckStatus(true);
-                            System.out.println("Black Check status " + gameState.getBlackCheckStatus());
+                            // System.out.println("Black Check status " + gameState.getBlackCheckStatus());
                         }
                 }
         } catch (Exception e) {}

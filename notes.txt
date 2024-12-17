@@ -1,10 +1,15 @@
 TODO 
 
-- if no moves are present period return  checkmate 
-
+- If no moves are present period return  checkmate 
 
 BUGS
-- King needs to check if spaces in between castling are safe before castling (no threats)
+- square threatened in rule manager needs to account for the possibility of a knight move or pawn move
+
+- unexpected behavior when a rook checks king
+
+- unexpected behavior when a pawn checks king
+
+
 
 REFACTOR NOTES: 
 

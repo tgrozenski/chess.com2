@@ -238,6 +238,15 @@ public class RuleManager {
         checkPiece(getRightMove(p.position), p.color);
     }
 
+    private boolean squareThreatened(Coord square, int color) {
+        Crawler crawlie = new Crawler();
+        Threat potentialEnemy = crawlie.getEnemy(square, color);
+        if (potentialEnemy != null && crawlie.threatPresent(potentialEnemy.state, potentialEnemy.piece)) {
+            return true;
+        }
+        return false;
+    }
+
     private boolean canCastleLeft(Piece p) {
         Coord currentLoc = p.position;
         if(p.hasMoved) {
@@ -248,6 +257,13 @@ public class RuleManager {
             Space left2 = board.getSpaceFromCoord(new Coord(currentLoc.x - 200, currentLoc.y));
             Space left3 = board.getSpaceFromCoord(new Coord(currentLoc.x - 300, currentLoc.y));
             Space left4 = board.getSpaceFromCoord(new Coord(currentLoc.x - 400, currentLoc.y));
+
+            // check there is not a threat on certain squares
+            if (squareThreatened(new Coord(left1.XPOS, left1.YPOS), p.color) || 
+                squareThreatened(new Coord(left2.XPOS, left2.YPOS), p.color) ||
+                squareThreatened(new Coord(left3.XPOS, left3.YPOS), p.color)) {
+                return false;
+            }
 
             if (left1.currentPiece == null && left2.currentPiece == null && left3.currentPiece == null 
             && left4.currentPiece.pieceType == 'r' && left4.currentPiece.color == p.color) {
@@ -270,6 +286,11 @@ public class RuleManager {
             Space right2 = board.getSpaceFromCoord(new Coord(currentLoc.x + 200, currentLoc.y));
             Space right3 = board.getSpaceFromCoord(new Coord(currentLoc.x + 300, currentLoc.y));
 
+            if (squareThreatened(new Coord(right1.XPOS, right1.YPOS), p.color) || 
+                squareThreatened(new Coord(right2.XPOS, right2.YPOS), p.color)) {
+                return false;
+            }
+
             if(right1.currentPiece == null && right2.currentPiece == null && right3.currentPiece != null 
             && right3.currentPiece.pieceType == 'r' && right3.currentPiece.color == p.color) {
                 legalMoves.add(right3.currentPiece.position);
@@ -284,7 +305,6 @@ public class RuleManager {
     private boolean checkEnPassantValid(Piece p, Space RorL, Piece previousPiece) {
         int valid = 0;
         if(RorL!= null && RorL.currentPiece!= null && previousPiece!= null ) {
-            System.out.println(p.color+ " " + RorL.currentPiece.color + " " + previousPiece.color);
             valid = (RorL.currentPiece.pieceType == p.pieceType) ? valid : 1;
             valid = (RorL.currentPiece.moveCount == 1) ? valid : 1;
             valid = (previousPiece.notation == RorL.currentPiece.notation) ? valid : 1;
@@ -335,9 +355,7 @@ public class RuleManager {
         }
     }
     private boolean findDefender(Piece target) {
-        GameState gs = new GameState();
         Crawler crawler = new Crawler();
-        Piece king = gs.getPreviousMovedPiece();
 
         //check for King/Rook
         for(pinnedTo pin: pinnedTo.values()) {
