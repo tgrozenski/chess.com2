@@ -1,0 +1,1713 @@
+package chess;
+
+import java.awt.*;
+import java.util.Objects;
+import javax.imageio.ImageIO;
+
+public class Board {
+
+    public static final int widthLength= 800;
+    public static final int spaceWidthLength = 100;
+    public static final Color primaryColor = new Color(173, 216, 230);
+    public static final Color secondaryColor = new Color(167, 199, 231);
+    public static final Color highlightColor = new Color(255,255,102);
+    public static Color currentColor = primaryColor;
+    public static Space[][] spacesArr = new Space[8][8];
+    public static Piece lastPieceMoved;
+
+    public Space[][] drawSpaces(Graphics g) {
+        for (int currentY = spaceWidthLength, outer = 0; currentY <= widthLength; currentY+=100, outer++) {
+            for(int currentX = spaceWidthLength, inner = 0; currentX <= widthLength; currentX+=100, inner++) {
+                g.setColor(currentColor);
+                g.fillRect(currentX, currentY, spaceWidthLength, spaceWidthLength); 
+                spacesArr[outer][inner] = new Space(currentColor, currentX, currentY);
+                colorSwap();
+            }
+            colorSwap();
+        }
+        return spacesArr;
+    }
+
+    public void drawNotation(Graphics g) {
+        String iterator = "8";
+        Font currentFont = g.getFont();
+        g.setFont(currentFont.deriveFont(currentFont.getSize() * 2.5F)); 
+        for (int currentY = spaceWidthLength + 65; currentY <= widthLength + 100; currentY+=100) {
+            g.drawString(iterator, 50, currentY); 
+            iterator = (Integer.parseInt(iterator) - 1) + "";
+        }
+        iterator = "a";
+        for (int currentX= spaceWidthLength + 35; currentX <= widthLength + 100; currentX+=100) {
+            g.drawString(iterator, currentX, 950); 
+            int charValue = iterator.charAt(0); 
+            iterator = String.valueOf((char) (charValue + 1));
+        }
+    }
+
+    public void colorSwap() {
+        if(currentColor == primaryColor) {
+            currentColor = secondaryColor;
+        }
+        else {
+            currentColor = primaryColor;
+        }
+    }
+
+    public void renderSpace(Graphics g, Piece piece) {
+        try {
+            Image img = ImageIO.read(Objects.requireNonNull(getClass().getResource(piece.imagePath)));
+            g.drawImage(img, piece.position.x, piece.position.y, null);
+        } 
+        catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        //Save it in the array
+       int[] indices = getIndexfromCoords(piece.position.x, piece.position.y);
+       spacesArr[indices[0]][indices[1]].currentPiece = piece;
+    }
+
+    public void clearSpace(Graphics g, String notation) {
+        Space space = this.getSpace(notation);
+        g.setColor(space.spaceColor);
+        g.fillRect(space.XPOS, space.YPOS, spaceWidthLength, spaceWidthLength);
+    }
+
+    public void highlightSquare(Graphics g, String notation) {
+        Space space = this.getSpace(notation);
+        g.setColor(highlightColor);
+        g.fillRect(space.XPOS, space.YPOS, spaceWidthLength, spaceWidthLength);
+        if(space.currentPiece != null) {
+            Piece piece = space.currentPiece; 
+            try {
+                Image img = ImageIO.read(Objects.requireNonNull(getClass().getResource(piece.imagePath)));
+                g.drawImage(img, piece.position.x, piece.position.y, null);
+            } catch (Exception e) {}
+            // System.out.println(piece.imagePath + " " + piece.position.x + " " + piece.position.y);
+        }
+    }
+
+    public int[] getIndexfromCoords(int XPOS, int YPOS) {
+        return new int[] {XPOS / 100 - 1, YPOS / 100 - 1};
+    }
+    
+    public Color getColor(String notation) {
+        Piece myPiece = new Piece(notation, false, false);
+        return spacesArr[myPiece.position.indexX][myPiece.position.indexY].spaceColor;
+    }
+
+    public Space getSpace(String notation) {
+        Piece piece = new Piece(notation, false, false);
+        int[] indices = getIndexfromCoords(piece.position.x, piece.position.y);
+        return spacesArr[indices[0]][indices[1]];
+    }
+
+    public Space getSpaceFromCoord(Coord coord) {
+        if(coord.x > 800 || coord.y > 800 || coord.x < 100 || coord.y < 100) {
+            return null;
+        }
+        return spacesArr[coord.indexX][coord.indexY];
+    }
+
+    public void setSpaceCurrentPiece(Piece p, Coord c) {
+        if(p == null) {
+            spacesArr[c.indexX][c.indexY].currentPiece = null;
+        }
+        else {
+            spacesArr[c.indexX][c.indexY].currentPiece = p;
+            // System.out.println("Updated Array: " + c.indexX + " " + c.indexY + " " +  spacesArr[c.indexX][c.indexY].currentPiece.notation);
+        }
+    }
+
+    public String getNewNotation(Piece p, Coord dest) {
+        return p.color + "" +  p.pieceType + dest.notation;
+    }
+
+    public Space getBottomRightMove(Coord cord) { return getSpaceFromCoord(new Coord(cord.x + 100, cord.y + 100)); }
+    public Space getBottomLeftMove(Coord cord) { return getSpaceFromCoord(new Coord(cord.x - 100, cord.y + 100)); }
+    public Space getTopLeftMove(Coord cord) { return getSpaceFromCoord(new Coord(cord.x - 100, cord.y - 100)); }
+    public Space getTopRightMove(Coord cord) { return getSpaceFromCoord(new Coord(cord.x + 100, cord.y - 100)); }
+    public Space getLeftMove(Coord cord) { return getSpaceFromCoord(new Coord(cord.x - 100, cord.y)); }
+    public Space getRightMove(Coord cord) { return getSpaceFromCoord(new Coord(cord.x + 100, cord.y)); }
+    public Space getTopMove(Coord cord) { return getSpaceFromCoord(new Coord(cord.x, cord.y - 100)); }
+    public Space getTop2Move(Coord cord) { return getSpaceFromCoord(new Coord(cord.x, cord.y - 200)); }
+    public Space getBottom2Move(Coord cord) { return getSpaceFromCoord(new Coord(cord.x, cord.y + 200)); }
+    public Space getBottomMove(Coord cord) { return getSpaceFromCoord(new Coord(cord.x, cord.y + 100)); }
+}package chess;
+
+import javax.swing.SwingUtilities;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.*;
+import java.util.ArrayList;
+
+public class Chess {
+    static GameState gameState = new GameState();
+    static Board board = new Board();
+    static boolean gameActive = false;
+    
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> createAndShowGUI());
+    }
+
+    private static void createAndShowGUI() {
+
+        JFrame f = new JFrame("Chess.com 2");
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        //initialize the board only once 
+        if(gameState.gameActive == false) {
+            initializeBoard();
+            gameState.gameActive = true;
+        }
+
+        JPanel panel = new JPanel() {
+
+            @Override
+            public Dimension getPreferredSize() {
+                return new Dimension(1000,1000);
+            }
+            public void highlightLegalMoves(Graphics g) {
+                    Board board = new Board();
+                    
+                    gameState.getLegalMoves().forEach( c -> {
+                    if (c.highlight == true) {
+                        try {
+                            board.highlightSquare(g, "00" + c.notation);
+                        } catch (Exception ex) {ex.printStackTrace();}
+                    }
+                    });
+            }
+
+            @Override
+            public void paintComponent(Graphics g) {
+                super.paintComponent(g);
+
+                Board board = new Board();
+                board.drawNotation(g);
+                board.drawSpaces(g);
+
+                for(Piece p: gameState.getBoardPosition().values()) {
+                    board.renderSpace(g, p);
+                }
+                if(gameState.getLegalMoves() != null) {
+                    highlightLegalMoves(g);
+                }
+            }
+        };
+        panel.setBackground(Color.gray);
+
+        panel.addMouseListener( new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                handleTouchEvent(panel, board, e);
+            }
+        });
+
+        f.add(panel);
+        f.pack();
+        f.setVisible(true);
+    }
+
+    private static int roundDownNearest100(int x) {
+        String xStr = "" + x;
+        int tempx = (10 * Character.getNumericValue(xStr.charAt(1))) + Character.getNumericValue(xStr.charAt(2));
+        x = x - tempx;
+        return x;
+    }
+
+    private static void initializeBoard() {
+        String[] startingPosition = {
+        "1pa7", "1pb7", "1pc7", "1pd7", "1pe7", "1pf7", "1pg7", "1ph7", "1ra8", "1rh8", "1nb8", "1ng8", "1bc8", "1bf8", "1qd8", "1ke8",
+        "0pa2", "0pb2", "0pc2", "0pd2", "0pe2", "0pf2", "0pg2", "0ph2", "0ra1", "0rh1", "0nb1", "0ng1", "0bc1", "0bf1", "0qd1", "0ke1", 
+        };
+        for(String str: startingPosition) {
+            gameState.addPiece(str, new Piece(str, false, false));
+        }
+    }
+
+    private static boolean validateMove(Coord c) {
+        for(Coord current: gameState.getLegalMoves()) {
+           if(c.notation.equals(current.notation)) {
+            return true;
+           }
+        }
+        return false;
+    }
+
+    public Piece getPieceFromBoard(Piece p) {
+        for(Piece current: gameState.getBoardPosition().values()) {
+            if(current.color == p.color && current.pieceType == 'k') {
+                return current;
+            }
+        }
+        return null;
+    }
+
+    private static void handleTouchEvent(JPanel panel, Board tempBoard, MouseEvent e) {
+        Space touchedSpace = tempBoard.getSpaceFromCoord(new Coord(roundDownNearest100(e.getX()), roundDownNearest100(e.getY())));
+        Coord touchedCoord = new Coord(touchedSpace.XPOS, touchedSpace.YPOS);
+
+        //initialize target piece if not null
+        Piece selectedPiece = gameState.getPreviousPiece();
+        Piece target = null;
+        if(tempBoard.getSpaceFromCoord(touchedCoord).currentPiece != null) {
+            target = tempBoard.getSpaceFromCoord(touchedCoord).currentPiece;
+        }
+
+        if (selectedPiece != null  && validateMove(touchedCoord)) {
+            //castling
+            if (target != null && target.color == selectedPiece.color) {
+                Coord newKing = null, newRook = null;
+                Piece king, rook;
+
+                if (target.position.x == 800) { // Castling right
+                    newKing = new Coord(selectedPiece.position.x + 200, selectedPiece.position.y);
+                    newRook = new Coord(target.position.x - 200, target.position.y);
+                
+                } else if(target.position.x == 100) { // Castling left
+                    newKing = new Coord(selectedPiece.position.x - 200, selectedPiece.position.y);
+                    newRook = new Coord(target.position.x + 300, target.position.y);
+                }
+
+                king = new Piece(selectedPiece.color + "" + selectedPiece.pieceType + "" + newKing.notation, false , true);
+                rook = new Piece(target.color + "" + target.pieceType + "" + newRook.notation, false , true);
+                king.hasMoved = true;
+                rook.hasMoved = true;
+                //set Old spaces to null and new to proper values
+                tempBoard.setSpaceCurrentPiece(null, target.position);
+                tempBoard.setSpaceCurrentPiece(null, selectedPiece.position);
+
+                try {
+                    tempBoard.setSpaceCurrentPiece(king, newKing);
+                    tempBoard.setSpaceCurrentPiece(rook, newRook);
+                    gameState.removePiece(target.notation);
+                    gameState.removePiece(gameState.getPreviousPiece().notation);
+                    gameState.addPiece(king.notation, king);
+                    gameState.addPiece(rook.notation, rook);
+                } catch (Exception except) {except.printStackTrace();}
+
+                gameState.clearLegalMoves();
+                gameState.setPreviousMovedPiece(king);
+                // System.out.println("setting previous piece here " + king.notation);
+                panel.repaint();
+
+            }
+            //en passant
+            else if (target != null && target.pieceType == 'p' && selectedPiece.pieceType == 'p' && selectedPiece.color != target.pieceType
+                && target.position.y == selectedPiece.position.y 
+                ) {
+                int val;
+                if (target.color == 1) { val = -100; }
+                else { val = 100; } 
+                gameState.removePiece(target.notation);
+                gameState.removePiece(selectedPiece.notation);
+                Piece newPiece = new Piece(tempBoard.getNewNotation(selectedPiece, new Coord(target.position.x, target.position.y + val)), false, true);
+                gameState.addPiece(newPiece.notation, newPiece);
+
+                gameState.clearLegalMoves();
+                gameState.setPreviousPiece(null);
+                panel.repaint();
+            }
+            // Normal move here 
+            else {
+                // if(gameState.getPreviousMovedPiece() != null) {
+                //     System.out.println("Previously Moved Piece " + gameState.getPreviousMovedPiece().notation);
+                // }
+
+                String newNotation = tempBoard.getNewNotation(gameState.getPreviousPiece(), touchedCoord);
+                Piece newPiece = new Piece(newNotation, false, true);
+                newPiece.hasMoved = true;
+                newPiece.moveCount += gameState.getPreviousPiece().moveCount + 1;
+
+                gameState.removePiece(selectedPiece.notation);
+                try { gameState.removePiece(target.notation); } catch (Exception ex) {}
+                gameState.addPiece(newNotation, newPiece);
+                tempBoard.setSpaceCurrentPiece(newPiece, touchedCoord);
+
+                gameState.clearLegalMoves();
+                checkForCheck(newPiece);
+                gameState.setPreviousMovedPiece(newPiece);
+                panel.repaint();
+
+            }
+        }
+        else if(touchedSpace.currentPiece == null) {
+            // System.out.println("user has not clicked a legal move, clear the board");
+            gameState.clearLegalMoves();
+            panel.repaint();
+        }
+        // clicking a piece for the first time 
+        else {
+            // stop if not player's turn
+            if (touchedSpace.currentPiece.color != gameState.getCurrentTurn()) {
+                return;
+            }
+
+            //stop if a non king piece is selected while king is in check
+            int color = (touchedSpace.currentPiece.color == 0) ? 0 : 1;
+            boolean status = (color == 0) ? gameState.getWhiteCheckStatus() : gameState.getBlackCheckStatus();
+
+            if (status && touchedSpace.currentPiece.pieceType != 'k') {
+                Crawler crawler = new Crawler();
+                Piece checkedKing = gameState.getKing(touchedSpace.currentPiece.color);
+                Threat enemy = crawler.getEnemy(checkedKing.position, checkedKing.color);
+
+                gameState.setPreviousPiece(touchedSpace.currentPiece);
+
+                // get all moves and filter them down
+                ArrayList<Coord> moves = touchedSpace.currentPiece.getLegalMoves(false, true);
+                ArrayList<Coord> validMoves = crawler.getSpacesTillTeamPiece(checkedKing.position, enemy.state, gameState.getPreviousMovedPiece().color);
+                validMoves.add(enemy.piece.position);
+                moves.retainAll(validMoves);
+                gameState.setLegalMoves(moves);
+                panel.repaint();
+            }
+            else {
+                // if (gameState.getPreviousMovedPiece() != null) {
+                //     System.out.println("Previously Moved Piece " + gameState.getPreviousMovedPiece().notation);
+                // }
+                try {
+                    gameState.setPreviousPiece(touchedSpace.currentPiece);
+                    gameState.setLegalMoves(touchedSpace.currentPiece.getLegalMoves(false, true));
+                    // System.out.println("CURRENT CLICKED PIECE: " + gameState.getPreviousPiece().notation);
+                } catch (Exception ex) {ex.printStackTrace();};
+                // System.out.println("Current Move Count" + touchedSpace.currentPiece.moveCount);
+                panel.repaint();
+            }
+        }
+        
+        // Set current move to the opposing color
+        // System.out.println("GS " + gameState.getPreviousMovedPiece().notation);
+        if (gameState.getPreviousMovedPiece() != null) {
+            gameState.setCurrentTurn((gameState.getPreviousMovedPiece().color == 0) ? 1 : 0);
+        }
+        // reevaluate any checks
+        reEvaluateCheck();
+
+    }
+
+    public static void reEvaluateCheck() {
+        // Uncheck provided 
+        boolean whiteCheckStatus =  gameState.getWhiteCheckStatus();
+        boolean blackCheckStatus =  gameState.getBlackCheckStatus();
+        int colorChecked;
+        if (whiteCheckStatus) {
+            colorChecked = 0;
+        }
+        else if (blackCheckStatus) {
+            colorChecked = 1;
+        }
+        else {
+            return;
+        }
+
+        Piece checkedKing = gameState.getKing(colorChecked);
+        Crawler crawlie = new Crawler();
+        Threat enemy = crawlie.getEnemy(checkedKing.position, checkedKing.color);
+
+        if (enemy == null) {
+            if (colorChecked == 0) {
+                gameState.setWhiteCheckStatus(false);
+            }
+            else {
+                gameState.setBlackCheckStatus(false);
+            }
+        }
+
+    }
+
+    public static void checkForCheck(Piece p) {
+    //    System.out.println("CHECKING FOR CHECK " + p.notation);
+       gameState.setLegalMoves(p.getLegalMoves(false, false));
+       for(Coord c: gameState.getLegalMoves()) {
+            try {
+                Piece current = board.getSpaceFromCoord(c).currentPiece;
+                if(current.pieceType == 'k') {
+                        if(current.color == 0) {
+                            gameState.setWhiteCheckStatus(true);
+                            // System.out.println("White Check status: " + gameState.getWhiteCheckStatus());
+                        }
+                        else {
+                            gameState.setBlackCheckStatus(true);
+                            // System.out.println("Black Check status " + gameState.getBlackCheckStatus());
+                        }
+                }
+        } catch (Exception e) {}
+       }
+       gameState.clearLegalMoves();
+    }
+}package chess;
+
+public class Coord {
+    public int x;
+    public int y;
+    public int indexX;
+    public boolean highlight = true;
+    public int indexY;
+    public String notation;
+
+    Coord(int x, int y) {
+        this.x = x;
+        this.y = y;
+        this.notation = coordToNotation();
+        this.indexX = positionToIndex(x, indexX);
+        this.indexY = positionToIndex(y, indexY);
+    }
+    
+    public int positionToIndex(int xPos, int index) {
+        return xPos / 100 - 1;
+    }
+    public String coordToNotation() {
+        String str = "";
+        str += (char) (96 + (x/100));
+        str += 9 - (y/100);
+        return str;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+    if (!(other instanceof Coord)) {
+            return false;
+        }
+        Coord that = (Coord) other;
+        return this.notation.equals(that.notation);
+    }
+}package chess;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.ArrayList;
+
+enum pinnedTo {
+    RIGHT,
+    LEFT,
+    TOP,
+    BOTTOM,
+    TOP_RIGHT,
+    TOP_LEFT,
+    BOTTOM_RIGHT,
+    BOTTOM_LEFT,
+    NOT_PINNED
+} 
+
+public class Crawler {
+//Takes a piece in constructor and maps teamMate spaces empty spaces and keeps the coordinate of the first enemy piece
+
+Board board = new Board();
+public HashMap<String, Coord> teamSpaces = new HashMap<>();
+public HashMap<String, Coord> emptySpaces = new HashMap<>();
+HashSet<Piece> enemigos = new HashSet<>();
+public Piece enemyPiece;
+public Piece king;
+
+public pinnedTo relationToKing(Coord p, Piece King) {
+    crawlSpaces(King.color, p, pinnedTo.RIGHT);
+    if(checkForPin()) {
+        return pinnedTo.LEFT;
+    }
+    crawlSpaces(King.color, p, pinnedTo.LEFT);
+    if(checkForPin()) {
+        return pinnedTo.RIGHT;
+    }
+    crawlSpaces(King.color, p, pinnedTo.TOP);
+    if(checkForPin()) {
+        return pinnedTo.BOTTOM;
+    }
+    crawlSpaces(King.color, p, pinnedTo.BOTTOM);
+    if(checkForPin()) {
+        return pinnedTo.TOP;
+    }
+    crawlSpaces(King.color, p, pinnedTo.TOP_LEFT);
+    if(checkForPin()) {
+        return pinnedTo.BOTTOM_RIGHT;
+    }
+    crawlSpaces(King.color, p, pinnedTo.BOTTOM_RIGHT);
+    if(checkForPin()) {
+        return pinnedTo.TOP_LEFT;
+    }
+    crawlSpaces(King.color, p, pinnedTo.BOTTOM_LEFT);
+    if(checkForPin()) {
+        return pinnedTo.TOP_RIGHT;
+    }
+    crawlSpaces(King.color, p, pinnedTo.TOP_RIGHT);
+    if(checkForPin()) {
+        return pinnedTo.BOTTOM_LEFT;
+    }
+    return pinnedTo.NOT_PINNED; }
+
+private boolean checkForPin() {
+    if(king != null && teamSpaces.size() == 1 && enemyPiece == null) {
+        clearAll();
+        return true;
+    }
+    else {
+        clearAll();
+        return false;
+    }
+}
+
+public Space getSpace(pinnedTo pinState, Coord p) {
+    switch (pinState) {
+        case RIGHT:
+            return board.getRightMove(p);
+        case LEFT:
+            return board.getLeftMove(p);
+        case TOP:
+            return board.getTopMove(p);
+        case BOTTOM:
+            return board.getBottomMove(p);
+        case BOTTOM_RIGHT:
+            return board.getBottomRightMove(p);
+        case BOTTOM_LEFT:
+            return board.getBottomLeftMove(p);
+        case TOP_RIGHT:
+            return board.getTopRightMove(p);
+        case TOP_LEFT:
+            return board.getTopLeftMove(p);
+        default:
+            return null;
+    }
+}
+
+public void crawlSpaces (int color, Coord pos, pinnedTo pinState) {
+    clearAll();
+    for(int i = 0; i < 7; i++) {
+        Space s = getSpace(pinState, pos);
+        if(s != null && pos != null) {
+            pos = new Coord(s.XPOS, s.YPOS);
+            Piece current = s.currentPiece;
+
+            if(current == null) {
+                emptySpaces.put(pos.notation, pos);
+            } 
+            else if(current.color == color) {
+                teamSpaces.put(pos.notation, pos);
+                if(current.pieceType == 'k') {
+                    king = current;
+                    break;
+                }
+            }
+            else {
+                this.enemyPiece = s.currentPiece;
+                break;
+            }
+        }
+        else {
+            break;
+        }
+    }
+}
+
+public void clearAll() {
+    enemyPiece = null;    
+    king = null;
+    emptySpaces.clear();
+    teamSpaces.clear();
+}
+
+public boolean threatPresent(pinnedTo state, Piece enemy) {
+    if(state == pinnedTo.RIGHT || state == pinnedTo.LEFT || state == pinnedTo.BOTTOM || state == pinnedTo.TOP) {
+        if(enemy.pieceType == 'r' || enemy.pieceType == 'q') {
+            return true;
+        }
+    }
+    else if(state == pinnedTo.TOP_LEFT || state == pinnedTo.TOP_RIGHT || state == pinnedTo.BOTTOM_LEFT || state == pinnedTo.BOTTOM_RIGHT) {
+        if(enemy.pieceType == 'b' || enemy.pieceType == 'q') {
+            return true;
+        }
+    }
+    return false;
+}
+
+public ArrayList<Coord> getSpacesTillTeamPiece(Coord pos, pinnedTo direction, int color) {
+    ArrayList<Coord> spaces = new ArrayList<>();
+    clearAll();
+    for(int i = 0; i < 7; i++) {
+        Space s = getSpace(direction, pos);
+        if(s != null || pos != null) {
+            pos = new Coord(s.XPOS, s.YPOS);
+            Piece current = s.currentPiece;
+            if(current == null) {
+                spaces.add(pos);
+            } 
+            else if(current.color == color) {
+                break;
+            }
+            else {
+                this.enemyPiece = s.currentPiece;
+                break;
+            }
+        }
+        else {
+            break;
+        }
+    }
+    return spaces;
+}
+
+private boolean enemyValid() {
+    if(enemyPiece != null && teamSpaces.size() == 0) {
+        if(enemyPiece.pieceType != 'p' || enemyPiece.pieceType != 'n') {
+            System.out.println("Enemy Valid " + enemyPiece.notation);
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    else {
+        System.out.println("Enemy is invalid");
+        return false;
+    }
+}
+
+public Threat getEnemy(Coord p, int color) {
+    crawlSpaces(color, p, pinnedTo.RIGHT);
+    if(enemyValid()) {
+        return new Threat(pinnedTo.RIGHT, enemyPiece);
+    }
+    crawlSpaces(color, p, pinnedTo.LEFT);
+    if(enemyValid()) {
+        return new Threat(pinnedTo.LEFT, enemyPiece);
+    }
+    crawlSpaces(color, p, pinnedTo.TOP);
+    if(enemyValid()) {
+        return new Threat(pinnedTo.TOP, enemyPiece);
+    }
+    crawlSpaces(color, p, pinnedTo.BOTTOM);
+    if(enemyValid()) {
+        return new Threat(pinnedTo.TOP, enemyPiece);
+    }
+    crawlSpaces(color, p, pinnedTo.TOP_LEFT);
+    if(enemyValid()) {
+        return new Threat(pinnedTo.TOP_LEFT, enemyPiece);
+    }
+    crawlSpaces(color, p, pinnedTo.BOTTOM_RIGHT);
+    if(enemyValid()) {
+        return new Threat(pinnedTo.BOTTOM_RIGHT, enemyPiece);
+    }
+    crawlSpaces(color, p, pinnedTo.BOTTOM_LEFT);
+    if(enemyValid()) {
+        return new Threat(pinnedTo.BOTTOM_LEFT, enemyPiece);
+    }
+    crawlSpaces(color, p, pinnedTo.TOP_RIGHT);
+    if(enemyValid()) {
+        return new Threat(pinnedTo.TOP_RIGHT, enemyPiece);
+    }
+    return null;
+    }
+}
+package chess;
+import java.util.HashMap;
+import java.util.ArrayList;
+
+
+public class GameState {
+    private static boolean whiteCheckStatus = false;
+    private static boolean blackCheckStatus = false;
+    public boolean gameActive = false;
+    private static Piece previousPiece;
+    private static Piece previousMovedPiece;
+    private static int currentTurn = 0;
+    private static ArrayList<Coord> legalMoves = new ArrayList<>(); 
+    private static HashMap<String, Piece> boardPosition = new HashMap<>();
+
+    public boolean getWhiteCheckStatus() {
+        return whiteCheckStatus;
+    }
+
+    public void setWhiteCheckStatus(boolean status) {
+        whiteCheckStatus = status;
+    }
+
+    public boolean getBlackCheckStatus() {
+        return blackCheckStatus;
+    }
+
+    public void setBlackCheckStatus(boolean status) {
+        blackCheckStatus = status;
+    }
+
+    public Piece getPreviousPiece() {
+        return previousPiece;
+    }
+
+    public void setPreviousPiece(Piece p) {
+        previousPiece = p;
+    }
+
+    public void setPreviousMovedPiece(Piece p) {
+        previousMovedPiece = p;
+    }
+
+    public Piece getPreviousMovedPiece() {
+        return previousMovedPiece;
+    }
+
+    public int getCurrentTurn() {
+        return currentTurn;
+    }
+
+    public void setCurrentTurn(int color) {
+        currentTurn = color;
+    }
+
+    public void setLegalMoves(ArrayList<Coord> arrList) {
+        legalMoves = arrList;
+    }
+
+    public ArrayList<Coord> getLegalMoves() {
+        return legalMoves;
+    }
+
+    public void setBoardPosition(HashMap<String, Piece> board) {
+        boardPosition = board;
+    }
+
+    public void addPiece(String key, Piece value) {
+        boardPosition.put(key, value);
+    }
+
+    public void removePiece(String notation) {
+        boardPosition.remove(notation);
+    }
+
+    public HashMap<String, Piece> getBoardPosition() {
+        return boardPosition;
+    }
+
+    public Piece getKing(int color) {
+        for(Piece p : boardPosition.values()) {
+            if(p.pieceType == 'k' && p.color == color) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    public void clearLegalMoves() {
+        legalMoves.clear();
+    }
+}package chess;
+import java.util.ArrayList;
+
+public class Piece {
+    public String notation; 
+    public Coord position;
+    public char pieceType;
+    public int color;
+    public int moveCount;
+    public boolean isTaken = false;
+    public boolean hasMoved = false;
+    public String imagePath;
+
+    Piece(String notation, boolean isTaken, boolean hasMoved) {
+        this.hasMoved = hasMoved;
+        this.isTaken = isTaken;
+        this.notation = notation;
+        this.position = notationToCoords(notation);
+        this.pieceType = notationtoPieceType(notation);
+        this.color = notationtoColor(notation);
+        this.imagePath = getImagePath();
+    }
+    //1ke8
+    private Coord notationToCoords(String notation) {
+        int x = ((int) notation.charAt(2) - 96) * 100;
+        int y = (9 - Character.getNumericValue(notation.charAt(3))) * 100;
+        Coord coord = new Coord(x, y);
+        return coord;
+    }
+
+    public char notationtoPieceType(String notation) {
+        return notation.charAt(1);
+    }
+
+    private int notationtoColor(String notation) {
+        return Integer.parseInt(notation.charAt(0) + "");
+    }
+
+    public ArrayList<Coord> getLegalMoves(boolean check, boolean highlight) {
+        RuleManager rm = new RuleManager();
+        ArrayList<Coord> arr = rm.getLegalMoves(this, check, highlight);
+        return arr;
+    }
+
+    private String getImagePath() {
+        if(this.color == 1) {
+        String path = "";
+        switch(this.pieceType) {
+            case 'k':
+                path = "../images/black_king.png";
+                break;
+            case 'q':
+                path = "../images/black_queen.png";
+                break;
+            case 'r':
+                path = "../images/black_rook.png";
+                break;
+            case 'b':
+                path = "../images/black_bishop.png";
+                break;
+            case 'n': 
+                path = "../images/black_knight.png";
+                break;
+            case 'p':
+                path ="../images/black_pawn.png";
+                break;
+        }
+        return path;
+        }
+        else {
+        String path = "";
+        switch(this.pieceType) {
+            case 'k':
+                path = "/images/white_king.png";
+                break;
+            case 'q':
+                path = "/images/white_queen.png";
+                break;
+            case 'r':
+                path = "/images/white_rook.png";
+                break;
+            case 'b':
+                path = "/images/white_bishop.png";
+                break;
+            case 'n': 
+                path = "/images/white_knight.png";
+                break;
+            case 'p':
+                path ="/images/white_pawn.png";
+                break;
+        }
+        return path;
+        }
+    }
+    
+}package chess;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.function.Supplier;
+
+public class RuleManager {
+
+    private ArrayList<Coord> legalMoves = new ArrayList<>();
+    private Board board = new Board();
+    private static final int WHITE = 0;
+    private boolean highlightState;
+    private HashMap<String, Supplier<Space>> commandList = new HashMap<>(); 
+    
+    public ArrayList<Coord> getLegalMoves(Piece p, boolean check, boolean highlight) {
+        this.highlightState = highlight;
+        switch(p.pieceType) {
+            case 'k':
+                getKingMoves(p, check);
+                break;
+            case 'q':
+                getBishopMoves(p);
+                getRookMoves(p);
+                break;
+            case 'r':
+                getRookMoves(p);
+                break;
+            case 'b':
+                getBishopMoves(p);
+                break;
+            case 'n': 
+                getKnightMoves(p);
+                break;
+            case 'p':
+                getPawnMoves(p);
+                auPassante(p);                
+                break;
+        }
+        if(!highlightState)  {
+            for(Coord c: legalMoves ) {
+                c.highlight = false;
+            }
+        }
+
+        ArrayList<Coord> temp = new ArrayList<>();
+        if(p.pieceType != 'k') {
+            GameState gs = new GameState();
+            Crawler crawler = new Crawler();
+
+            //determine king relationship
+            pinnedTo pinnedState = pinnedTo.NOT_PINNED;
+            pinnedTo relation = crawler.relationToKing(p.position, gs.getKing(p.color));
+
+            //determine pin
+            if(relation != pinnedTo.NOT_PINNED) {
+                crawler.crawlSpaces(p.color, p.position, relation);
+                if(crawler.enemyPiece != null) {
+                    if(crawler.threatPresent(relation, crawler.enemyPiece) && crawler.teamSpaces.size() == 0) {
+                        pinnedState = relation; 
+                    }
+                }
+            }
+
+            //filter moves
+            if(pinnedState != pinnedTo.NOT_PINNED) {
+                for(Coord c: legalMoves) {
+                    for(Coord c2: crawler.emptySpaces.values()) {
+                        if(c.notation.charAt(0) == c2.notation.charAt(0) && c.notation.charAt(1) == c2.notation.charAt(1)) {
+                            temp.add(c);
+                        }
+                    }
+                    if(crawler.enemyPiece.position.notation.charAt(0) == c.notation.charAt(0) && crawler.enemyPiece.position.notation.charAt(1) == c.notation.charAt(1)) {
+                        temp.add(c);
+                    }
+                }
+                return temp;
+            }
+        }
+        else {
+            ArrayList<Coord> restrictedMoves = this.getAllMoves(p.color);
+            for(Coord coord: restrictedMoves) {
+                for(int i = 0; i < legalMoves.size(); i++) {
+                    if(legalMoves.get(i).x == coord.x && legalMoves.get(i).y == coord.y) {
+                        legalMoves.remove(legalMoves.get(i));
+                    }
+                }
+            }
+
+            
+        }
+        return legalMoves;
+    }
+
+    public void getKnightMoves(Piece p) {
+        Coord topRight = new Coord(p.position.x + 100, p.position.y - 200);
+        Coord topLeft = new Coord(p.position.x - 100, p.position.y - 200);
+        Coord bottomRight= new Coord(p.position.x + 100, p.position.y + 200);
+        Coord bottomLeft = new Coord(p.position.x - 100, p.position.y + 200);
+        Coord middleLeftA = new Coord(p.position.x - 200, p.position.y + 100);
+        Coord middleLeftB = new Coord(p.position.x - 200, p.position.y - 100);
+        Coord middleRightA = new Coord(p.position.x + 200, p.position.y + 100);
+        Coord middleRightB = new Coord(p.position.x + 200, p.position.y - 100);
+        Coord[] arr = { topLeft, topRight, bottomRight, bottomLeft, middleLeftA, middleLeftB, middleRightA, middleRightB }; 
+
+        for(Coord c: arr) {
+            if(board.getSpaceFromCoord(c) != null) {
+                checkPieceTakeable(board.getSpaceFromCoord(c), p.color);
+            }
+        }
+    }
+
+    public boolean knightPresent(Piece p) {
+        Coord topRight = new Coord(p.position.x + 100, p.position.y - 200);
+        Coord topLeft = new Coord(p.position.x - 100, p.position.y - 200);
+        Coord bottomRight= new Coord(p.position.x + 100, p.position.y + 200);
+        Coord bottomLeft = new Coord(p.position.x - 100, p.position.y + 200);
+        Coord middleLeftA = new Coord(p.position.x - 200, p.position.y + 100);
+        Coord middleLeftB = new Coord(p.position.x - 200, p.position.y - 100);
+        Coord middleRightA = new Coord(p.position.x + 200, p.position.y + 100);
+        Coord middleRightB = new Coord(p.position.x + 200, p.position.y - 100);
+        Coord[] arr = { topLeft, topRight, bottomRight, bottomLeft, middleLeftA, middleLeftB, middleRightA, middleRightB }; 
+
+        for(Coord c: arr) {
+            if(board.getSpaceFromCoord(c) != null) {
+                Piece piece = board.getSpaceFromCoord(c).currentPiece; 
+                if(piece != null && piece.color == p.color && piece.pieceType == 'n') {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private void getBishopMoves(Piece p) {
+        //potential multithreading available
+        Coord right = p.position, left = p.position, bottomLeft = p.position, bottomRight = p.position;
+        boolean rightState = true, leftState = true, bottomRightState = true, bottomLeftState = true;
+        for(int i = 0; i < 8; i++) {
+            if (rightState) {
+                Space s = getTopRightMove(right);
+                if(s != null) {
+                rightState = checkPieceTakeable(s, p.color); 
+                right = new Coord(s.XPOS, s.YPOS);
+                }
+            }
+            if (leftState) {
+                Space s2 = getTopLeftMove(left);
+                if(s2 != null) {
+                leftState = checkPieceTakeable(s2, p.color);
+                left = new Coord(s2.XPOS, s2.YPOS);
+                }
+            }
+            if (bottomLeftState) {
+                Space s = getBottomLeftMove(bottomLeft);
+                if(s != null) {
+                bottomLeftState = checkPieceTakeable(s, p.color); 
+                bottomLeft = new Coord(s.XPOS, s.YPOS);
+                }
+            }
+            if(bottomRightState) {
+                Space s = getBottomRightMove(bottomRight);
+                if(s != null) {
+                bottomRightState = checkPieceTakeable(s, p.color);
+                bottomRight = new Coord(s.XPOS, s.YPOS);
+                }
+            }
+        }
+    }
+
+    private void getRookMoves(Piece p) {
+        Coord right = p.position, left = p.position, bottom = p.position, top = p.position;
+        boolean rightState = true, leftState = true, bottomState = true, topState= true;
+
+        for(int i = 0; i < 7; i++) {
+            if (rightState) {
+                Space s = getRightMove(right);
+                if(s != null) {
+                    rightState = checkPieceTakeable(s, p.color);
+                    right = new Coord(s.XPOS, s.YPOS);
+                }
+            }
+            if (leftState) {
+                Space s2 = getLeftMove(left);
+                if(s2 != null) {
+                    leftState = checkPieceTakeable(s2, p.color);
+                    left = new Coord(s2.XPOS, s2.YPOS);
+                }
+            }
+            if (bottomState) {
+                Space s = getBottomMove(bottom);
+                if(s!=null) {
+                    bottomState = checkPieceTakeable(s, p.color);
+                    bottom = new Coord(s.XPOS, s.YPOS);
+                }
+            }
+            if(topState) {
+                Space s = getTopMove(top);
+                if(s!= null) {
+                    topState = checkPieceTakeable(s, p.color);
+                    top = new Coord(s.XPOS, s.YPOS);
+                }
+            }
+       }
+    }
+
+    public void getPawnMoves(Piece p) {
+        Coord position = new Coord(p.position.x, p.position.y);
+        // System.out.println("POSITION IN GET MOVES: " + position.x + " " + position.y);
+        if(p.color == WHITE) {
+            checkPiecePawnMove(getTopMove(position), p.color);
+            if(!p.hasMoved && getTopMove(position).currentPiece == null) {
+                checkPiecePawnMove(getTop2Move(position), p.color);
+            }
+            checkPiecePawnTake(getTopLeftMove(position), p.color);
+            checkPiecePawnTake(getTopRightMove(position), p.color);
+        }
+        else {
+            checkPiecePawnMove(getBottomMove(position), p.color);
+            if(!p.hasMoved && getBottomMove(position).currentPiece == null) {
+                checkPiecePawnMove(getBottom2Move(position), p.color);
+            }
+            checkPiecePawnTake(getBottomLeftMove(position), p.color);
+            checkPiecePawnTake(getBottomRightMove(position), p.color);
+        }
+    }
+
+    public void getKingMoves(Piece p, boolean check) {
+        if(!check) {
+            canCastleLeft(p);
+            canCastleRight(p);
+        }
+        checkPiece(getBottomMove(p.position), p.color);
+        checkPiece(getTopMove(p.position), p.color);
+        checkPiece(getTopLeftMove(p.position), p.color);
+        checkPiece(getTopRightMove(p.position), p.color);
+        checkPiece(getBottomLeftMove(p.position), p.color);
+        checkPiece(getBottomRightMove(p.position), p.color);
+        checkPiece(getLeftMove(p.position), p.color);
+        checkPiece(getRightMove(p.position), p.color);
+    }
+
+    private boolean squareThreatened(Coord square, int color) {
+        Crawler crawlie = new Crawler();
+        Threat potentialEnemy = crawlie.getEnemy(square, color);
+        if (potentialEnemy != null && crawlie.threatPresent(potentialEnemy.state, potentialEnemy.piece)) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean canCastleLeft(Piece p) {
+        Coord currentLoc = p.position;
+        if(p.hasMoved) {
+            return false;
+        }
+        try {
+            Space left1 = board.getSpaceFromCoord(new Coord(currentLoc.x - 100, currentLoc.y));
+            Space left2 = board.getSpaceFromCoord(new Coord(currentLoc.x - 200, currentLoc.y));
+            Space left3 = board.getSpaceFromCoord(new Coord(currentLoc.x - 300, currentLoc.y));
+            Space left4 = board.getSpaceFromCoord(new Coord(currentLoc.x - 400, currentLoc.y));
+
+            // check there is not a threat on certain squares
+            if (squareThreatened(new Coord(left1.XPOS, left1.YPOS), p.color) || 
+                squareThreatened(new Coord(left2.XPOS, left2.YPOS), p.color) ||
+                squareThreatened(new Coord(left3.XPOS, left3.YPOS), p.color)) {
+                return false;
+            }
+
+            if (left1.currentPiece == null && left2.currentPiece == null && left3.currentPiece == null 
+            && left4.currentPiece.pieceType == 'r' && left4.currentPiece.color == p.color) {
+                legalMoves.add(left4.currentPiece.position);
+                return true;
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return false;
+    }
+    
+    private boolean canCastleRight(Piece p) {
+        Coord currentLoc = p.position;
+        if(p.hasMoved) {
+            return false;
+        }
+        try {
+            Space right1 = board.getSpaceFromCoord(new Coord(currentLoc.x + 100, currentLoc.y));
+            Space right2 = board.getSpaceFromCoord(new Coord(currentLoc.x + 200, currentLoc.y));
+            Space right3 = board.getSpaceFromCoord(new Coord(currentLoc.x + 300, currentLoc.y));
+
+            if (squareThreatened(new Coord(right1.XPOS, right1.YPOS), p.color) || 
+                squareThreatened(new Coord(right2.XPOS, right2.YPOS), p.color)) {
+                return false;
+            }
+
+            if(right1.currentPiece == null && right2.currentPiece == null && right3.currentPiece != null 
+            && right3.currentPiece.pieceType == 'r' && right3.currentPiece.color == p.color) {
+                legalMoves.add(right3.currentPiece.position);
+                return true;
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return false;
+    }
+
+    private boolean checkEnPassantValid(Piece p, Space RorL, Piece previousPiece) {
+        int valid = 0;
+        if(RorL!= null && RorL.currentPiece!= null && previousPiece!= null ) {
+            valid = (RorL.currentPiece.pieceType == p.pieceType) ? valid : 1;
+            valid = (RorL.currentPiece.moveCount == 1) ? valid : 1;
+            valid = (previousPiece.notation == RorL.currentPiece.notation) ? valid : 1;
+            valid = (p.color != previousPiece.color) ? valid : 1; 
+            valid = (p.position.y == 400 || p.position.y == 500) ? valid : 1; 
+        }
+        else {
+            valid = 1;
+        }
+        return (valid != 0) ? false : true;
+    }
+
+    private void auPassante(Piece p) {
+        Coord currentLoc = p.position;
+        Space right = board.getSpaceFromCoord(new Coord(currentLoc.x + 100, currentLoc.y));
+        Space left = board.getSpaceFromCoord(new Coord(currentLoc.x - 100, currentLoc.y));
+        GameState gs = new GameState();
+        Piece previousMovedPiece = gs.getPreviousMovedPiece();
+
+        if(checkEnPassantValid(p, right, previousMovedPiece)) {
+            legalMoves.add(new Coord(right.XPOS, right.YPOS));
+        }
+        if(checkEnPassantValid(p, left, previousMovedPiece)) {
+            legalMoves.add(new Coord(left.XPOS, left.YPOS));
+        }
+    }
+    
+    private boolean checkPieceTakeable(Space s, int color) {
+        if(s != null && s.currentPiece == null ) {
+            legalMoves.add(new Coord(s.XPOS, s.YPOS));
+            return true;
+        }
+        else if(s != null &&s.currentPiece.color != color) {
+            legalMoves.add(new Coord(s.XPOS, s.YPOS));
+            return false;
+        }
+        else return false;
+    }
+
+    private void checkPiece(Space s, int originalPieceColor) {
+        if(s != null && s.currentPiece != null && s.currentPiece.color != originalPieceColor && s.XPOS <= 800 && s.YPOS >= 100) {
+            if(!findDefender(s.currentPiece)) {
+                legalMoves.add(new Coord(s.XPOS, s.YPOS));
+            }
+        }
+        else if(s!= null && s.currentPiece == null)  {
+            legalMoves.add(new Coord(s.XPOS, s.YPOS));
+        }
+    }
+    private boolean findDefender(Piece target) {
+        Crawler crawler = new Crawler();
+
+        //check for King/Rook
+        for(pinnedTo pin: pinnedTo.values()) {
+            crawler.crawlSpaces(target.color, target.position, pin);
+            for (Coord c: crawler.teamSpaces.values()) {
+                if(board.getSpaceFromCoord(c).currentPiece != null) {
+                    Piece p = board.getSpaceFromCoord(c).currentPiece;
+                    if(p.pieceType == 'q') {
+                        return true;
+                    }
+                    else if(pin == pinnedTo.LEFT || pin == pinnedTo.RIGHT || pin == pinnedTo.BOTTOM || pin == pinnedTo.TOP) {
+                        if(p.pieceType == 'r') {
+                            return true;
+                        }
+                    }
+                    else if(pin == pinnedTo.TOP_LEFT || pin == pinnedTo.TOP_RIGHT || pin == pinnedTo.BOTTOM_LEFT || pin == pinnedTo.BOTTOM_RIGHT) {
+                        if(p.pieceType == 'b') {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        //check for knight
+        if(knightPresent(target)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private void checkPiecePawnTake(Space s, int originalPieceColor) {
+        if(s!= null && s.currentPiece != null && s.currentPiece.color != originalPieceColor) {
+            legalMoves.add(new Coord(s.XPOS, s.YPOS));
+        }
+    }
+    private void checkPiecePawnMove(Space s, int originalPieceColor) {
+        if(s!= null && s.currentPiece == null) {
+            legalMoves.add(new Coord(s.XPOS, s.YPOS));
+        }
+    }
+
+    public ArrayList<Coord> getAllMoves(int color) {
+        ArrayList<Coord> allMoves = new ArrayList<>();
+        GameState gs = new GameState();
+        HashMap<String,Piece> boardPos = gs.getBoardPosition();
+
+        //temporarily remove the king to get the moves past the king
+        Piece King = gs.getKing(color);
+        Board.spacesArr[King.position.indexX][King.position.indexY].currentPiece = null;
+        
+        for(Piece p : boardPos.values()) {
+            if(p.color != color && p.pieceType != 'k' && p.pieceType != 'p') {
+                for(Coord move: p.getLegalMoves(false, false)) {
+                    allMoves.add(move);
+                }
+            }
+            else if(p.pieceType == 'p' && p.color != color) {
+                if(p.color == WHITE) {
+                    Space right = getTopRightMove(p.position);
+                    Space left = getTopLeftMove(p.position);
+                    if(right != null) {
+                        allMoves.add(new Coord(right.XPOS, right.YPOS));
+                    }
+                    if(left != null) {
+                        allMoves.add(new Coord(left.XPOS, left.YPOS));
+                    }
+                }
+                else {
+                    Space right = getBottomRightMove(p.position);
+                    Space left = getBottomLeftMove(p.position);
+                    if(right != null) {
+                    allMoves.add(new Coord(right.XPOS, right.YPOS));
+                    }
+                    if(left != null) {
+                    allMoves.add(new Coord(left.XPOS, left.YPOS));
+                    }
+                }
+            }
+            else if(p.pieceType == 'k' && p.color != color) {
+                ArrayList<Coord> array = new ArrayList<>();
+                array = returnKingMoves(p.position);
+                for(Coord c: array) {
+                    allMoves.add(c);
+                }
+            }
+        }
+        //put the king back in
+        Board.spacesArr[King.position.indexX][King.position.indexY].currentPiece = King;
+
+        return allMoves;
+    }
+    public void initCommandMap(Coord position) {
+        commandList.put("br", () -> getBottomRightMove(position));
+        commandList.put("t", () -> getTopMove(position));
+        commandList.put("tl", () -> getTopLeftMove(position));
+        commandList.put("tr", () -> getTopRightMove(position));
+        commandList.put("bl", () -> getBottomLeftMove(position));
+        commandList.put("l", () -> getLeftMove(position));
+        commandList.put("r", () -> getRightMove(position));
+        commandList.put("b", () -> getBottomMove(position));
+    }
+
+    private ArrayList<Coord> returnKingMoves(Coord position) {
+       ArrayList<Coord> arr = new ArrayList<>();
+       Space s = getBottomRightMove(position);
+       if(s != null) {
+        arr.add(new Coord(s.XPOS, s.YPOS));
+       }
+        String[] directions = { "br", "t", "tl", "tr", "bl", "bl", "l", "r", "b" };
+        initCommandMap(position);  
+
+        for(String dir: directions) {
+            Space space = commandList.get(dir).get();
+            if(space != null) {
+                arr.add(new Coord(space.XPOS, space.YPOS));
+            }
+        }
+       return arr;
+    }
+
+    private Space getBottomRightMove(Coord cord) { return board.getSpaceFromCoord(new Coord(cord.x + 100, cord.y + 100)); }
+    private Space getBottomLeftMove(Coord cord) { return board.getSpaceFromCoord(new Coord(cord.x - 100, cord.y + 100)); }
+    private Space getTopLeftMove(Coord cord) { return board.getSpaceFromCoord(new Coord(cord.x - 100, cord.y - 100)); }
+    private Space getTopRightMove(Coord cord) { return board.getSpaceFromCoord(new Coord(cord.x + 100, cord.y - 100)); }
+    private Space getLeftMove(Coord cord) { return board.getSpaceFromCoord(new Coord(cord.x - 100, cord.y)); }
+    private Space getRightMove(Coord cord) { return board.getSpaceFromCoord(new Coord(cord.x + 100, cord.y)); }
+    private Space getTopMove(Coord cord) { return board.getSpaceFromCoord(new Coord(cord.x, cord.y - 100)); }
+    private Space getTop2Move(Coord cord) { return board.getSpaceFromCoord(new Coord(cord.x, cord.y - 200)); }
+    private Space getBottom2Move(Coord cord) { return board.getSpaceFromCoord(new Coord(cord.x, cord.y + 200)); }
+    private Space getBottomMove(Coord cord) { return board.getSpaceFromCoord(new Coord(cord.x, cord.y + 100)); }
+
+}package chess;
+
+import java.awt.Color;
+
+public class Space {
+
+    public Color spaceColor;
+    public Piece currentPiece;
+    public String spaceNotation;
+    public int XPOS;
+    public int YPOS;
+
+    public Space(Color color, int x, int y) {
+        this.XPOS = y;
+        this.YPOS = x;
+        this.spaceColor = color;
+    }
+
+}package chess;
+
+public class Threat {
+
+pinnedTo state;
+Piece piece;
+
+Threat(pinnedTo state, Piece threat ) {
+    this.state = state;
+    this.piece = threat;
+}
+}package chess;
+
+import javax.swing.SwingUtilities;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.*;
+import java.util.ArrayList;
+
+public class Chess {
+    static GameState gameState = new GameState();
+    static Board board = new Board();
+    static boolean gameActive = false;
+    
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> createAndShowGUI());
+    }
+
+    private static void createAndShowGUI() {
+
+        JFrame f = new JFrame("Chess.com 2");
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        //initialize the board only once 
+        if(gameState.gameActive == false) {
+            initializeBoard();
+            gameState.gameActive = true;
+        }
+
+        JPanel panel = new JPanel() {
+
+            @Override
+            public Dimension getPreferredSize() {
+                return new Dimension(1000,1000);
+            }
+            public void highlightLegalMoves(Graphics g) {
+                    Board board = new Board();
+                    
+                    gameState.getLegalMoves().forEach( c -> {
+                    if (c.highlight == true) {
+                        try {
+                            board.highlightSquare(g, "00" + c.notation);
+                        } catch (Exception ex) {ex.printStackTrace();}
+                    }
+                    });
+            }
+
+            @Override
+            public void paintComponent(Graphics g) {
+                super.paintComponent(g);
+
+                Board board = new Board();
+                board.drawNotation(g);
+                board.drawSpaces(g);
+
+                for(Piece p: gameState.getBoardPosition().values()) {
+                    board.renderSpace(g, p);
+                }
+                if(gameState.getLegalMoves() != null) {
+                    highlightLegalMoves(g);
+                }
+            }
+        };
+        panel.setBackground(Color.gray);
+
+        panel.addMouseListener( new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                handleTouchEvent(panel, board, e);
+            }
+        });
+
+        f.add(panel);
+        f.pack();
+        f.setVisible(true);
+    }
+
+    private static int roundDownNearest100(int x) {
+        String xStr = "" + x;
+        int tempx = (10 * Character.getNumericValue(xStr.charAt(1))) + Character.getNumericValue(xStr.charAt(2));
+        x = x - tempx;
+        return x;
+    }
+
+    private static void initializeBoard() {
+        String[] startingPosition = {
+        "1pa7", "1pb7", "1pc7", "1pd7", "1pe7", "1pf7", "1pg7", "1ph7", "1ra8", "1rh8", "1nb8", "1ng8", "1bc8", "1bf8", "1qd8", "1ke8",
+        "0pa2", "0pb2", "0pc2", "0pd2", "0pe2", "0pf2", "0pg2", "0ph2", "0ra1", "0rh1", "0nb1", "0ng1", "0bc1", "0bf1", "0qd1", "0ke1", 
+        };
+        for(String str: startingPosition) {
+            gameState.addPiece(str, new Piece(str, false, false));
+        }
+    }
+
+    private static boolean validateMove(Coord c) {
+        for(Coord current: gameState.getLegalMoves()) {
+           if(c.notation.equals(current.notation)) {
+            return true;
+           }
+        }
+        return false;
+    }
+
+    public Piece getPieceFromBoard(Piece p) {
+        for(Piece current: gameState.getBoardPosition().values()) {
+            if(current.color == p.color && current.pieceType == 'k') {
+                return current;
+            }
+        }
+        return null;
+    }
+
+    private static void handleTouchEvent(JPanel panel, Board tempBoard, MouseEvent e) {
+        Space touchedSpace = tempBoard.getSpaceFromCoord(new Coord(roundDownNearest100(e.getX()), roundDownNearest100(e.getY())));
+        Coord touchedCoord = new Coord(touchedSpace.XPOS, touchedSpace.YPOS);
+
+        //initialize target piece if not null
+        Piece selectedPiece = gameState.getPreviousPiece();
+        Piece target = null;
+        if(tempBoard.getSpaceFromCoord(touchedCoord).currentPiece != null) {
+            target = tempBoard.getSpaceFromCoord(touchedCoord).currentPiece;
+        }
+
+        if (selectedPiece != null  && validateMove(touchedCoord)) {
+            //castling
+            if (target != null && target.color == selectedPiece.color) {
+                Coord newKing = null, newRook = null;
+                Piece king, rook;
+
+                if (target.position.x == 800) { // Castling right
+                    newKing = new Coord(selectedPiece.position.x + 200, selectedPiece.position.y);
+                    newRook = new Coord(target.position.x - 200, target.position.y);
+                
+                } else if(target.position.x == 100) { // Castling left
+                    newKing = new Coord(selectedPiece.position.x - 200, selectedPiece.position.y);
+                    newRook = new Coord(target.position.x + 300, target.position.y);
+                }
+
+                king = new Piece(selectedPiece.color + "" + selectedPiece.pieceType + "" + newKing.notation, false , true);
+                rook = new Piece(target.color + "" + target.pieceType + "" + newRook.notation, false , true);
+                king.hasMoved = true;
+                rook.hasMoved = true;
+                //set Old spaces to null and new to proper values
+                tempBoard.setSpaceCurrentPiece(null, target.position);
+                tempBoard.setSpaceCurrentPiece(null, selectedPiece.position);
+
+                try {
+                    tempBoard.setSpaceCurrentPiece(king, newKing);
+                    tempBoard.setSpaceCurrentPiece(rook, newRook);
+                    gameState.removePiece(target.notation);
+                    gameState.removePiece(gameState.getPreviousPiece().notation);
+                    gameState.addPiece(king.notation, king);
+                    gameState.addPiece(rook.notation, rook);
+                } catch (Exception except) {except.printStackTrace();}
+
+                gameState.clearLegalMoves();
+                gameState.setPreviousMovedPiece(king);
+                // System.out.println("setting previous piece here " + king.notation);
+                panel.repaint();
+
+            }
+            //en passant
+            else if (target != null && target.pieceType == 'p' && selectedPiece.pieceType == 'p' && selectedPiece.color != target.pieceType
+                && target.position.y == selectedPiece.position.y 
+                ) {
+                int val;
+                if (target.color == 1) { val = -100; }
+                else { val = 100; } 
+                gameState.removePiece(target.notation);
+                gameState.removePiece(selectedPiece.notation);
+                Piece newPiece = new Piece(tempBoard.getNewNotation(selectedPiece, new Coord(target.position.x, target.position.y + val)), false, true);
+                gameState.addPiece(newPiece.notation, newPiece);
+
+                gameState.clearLegalMoves();
+                gameState.setPreviousPiece(null);
+                panel.repaint();
+            }
+            // Normal move here 
+            else {
+                // if(gameState.getPreviousMovedPiece() != null) {
+                //     System.out.println("Previously Moved Piece " + gameState.getPreviousMovedPiece().notation);
+                // }
+
+                String newNotation = tempBoard.getNewNotation(gameState.getPreviousPiece(), touchedCoord);
+                Piece newPiece = new Piece(newNotation, false, true);
+                newPiece.hasMoved = true;
+                newPiece.moveCount += gameState.getPreviousPiece().moveCount + 1;
+
+                gameState.removePiece(selectedPiece.notation);
+                try { gameState.removePiece(target.notation); } catch (Exception ex) {}
+                gameState.addPiece(newNotation, newPiece);
+                tempBoard.setSpaceCurrentPiece(newPiece, touchedCoord);
+
+                gameState.clearLegalMoves();
+                checkForCheck(newPiece);
+                gameState.setPreviousMovedPiece(newPiece);
+                panel.repaint();
+
+            }
+        }
+        else if(touchedSpace.currentPiece == null) {
+            // System.out.println("user has not clicked a legal move, clear the board");
+            gameState.clearLegalMoves();
+            panel.repaint();
+        }
+        // clicking a piece for the first time 
+        else {
+            // stop if not player's turn
+            if (touchedSpace.currentPiece.color != gameState.getCurrentTurn()) {
+                return;
+            }
+
+            //stop if a non king piece is selected while king is in check
+            int color = (touchedSpace.currentPiece.color == 0) ? 0 : 1;
+            boolean status = (color == 0) ? gameState.getWhiteCheckStatus() : gameState.getBlackCheckStatus();
+
+            if (status && touchedSpace.currentPiece.pieceType != 'k') {
+                Crawler crawler = new Crawler();
+                Piece checkedKing = gameState.getKing(touchedSpace.currentPiece.color);
+                Threat enemy = crawler.getEnemy(checkedKing.position, checkedKing.color);
+
+                gameState.setPreviousPiece(touchedSpace.currentPiece);
+
+                // get all moves and filter them down
+                ArrayList<Coord> moves = touchedSpace.currentPiece.getLegalMoves(false, true);
+                ArrayList<Coord> validMoves = crawler.getSpacesTillTeamPiece(checkedKing.position, enemy.state, gameState.getPreviousMovedPiece().color);
+                validMoves.add(enemy.piece.position);
+                moves.retainAll(validMoves);
+                gameState.setLegalMoves(moves);
+                panel.repaint();
+            }
+            else {
+                // if (gameState.getPreviousMovedPiece() != null) {
+                //     System.out.println("Previously Moved Piece " + gameState.getPreviousMovedPiece().notation);
+                // }
+                try {
+                    gameState.setPreviousPiece(touchedSpace.currentPiece);
+                    gameState.setLegalMoves(touchedSpace.currentPiece.getLegalMoves(false, true));
+                    // System.out.println("CURRENT CLICKED PIECE: " + gameState.getPreviousPiece().notation);
+                } catch (Exception ex) {ex.printStackTrace();};
+                // System.out.println("Current Move Count" + touchedSpace.currentPiece.moveCount);
+                panel.repaint();
+            }
+        }
+        
+        // Set current move to the opposing color
+        // System.out.println("GS " + gameState.getPreviousMovedPiece().notation);
+        if (gameState.getPreviousMovedPiece() != null) {
+            gameState.setCurrentTurn((gameState.getPreviousMovedPiece().color == 0) ? 1 : 0);
+        }
+        // reevaluate any checks
+        reEvaluateCheck();
+
+    }
+
+    public static void reEvaluateCheck() {
+        // Uncheck provided 
+        boolean whiteCheckStatus =  gameState.getWhiteCheckStatus();
+        boolean blackCheckStatus =  gameState.getBlackCheckStatus();
+        int colorChecked;
+        if (whiteCheckStatus) {
+            colorChecked = 0;
+        }
+        else if (blackCheckStatus) {
+            colorChecked = 1;
+        }
+        else {
+            return;
+        }
+
+        Piece checkedKing = gameState.getKing(colorChecked);
+        Crawler crawlie = new Crawler();
+        Threat enemy = crawlie.getEnemy(checkedKing.position, checkedKing.color);
+
+        if (enemy == null) {
+            if (colorChecked == 0) {
+                gameState.setWhiteCheckStatus(false);
+            }
+            else {
+                gameState.setBlackCheckStatus(false);
+            }
+        }
+
+    }
+
+    public static void checkForCheck(Piece p) {
+    //    System.out.println("CHECKING FOR CHECK " + p.notation);
+       gameState.setLegalMoves(p.getLegalMoves(false, false));
+       for(Coord c: gameState.getLegalMoves()) {
+            try {
+                Piece current = board.getSpaceFromCoord(c).currentPiece;
+                if(current.pieceType == 'k') {
+                        if(current.color == 0) {
+                            gameState.setWhiteCheckStatus(true);
+                            // System.out.println("White Check status: " + gameState.getWhiteCheckStatus());
+                        }
+                        else {
+                            gameState.setBlackCheckStatus(true);
+                            // System.out.println("Black Check status " + gameState.getBlackCheckStatus());
+                        }
+                }
+        } catch (Exception e) {}
+       }
+       gameState.clearLegalMoves();
+    }
+}
