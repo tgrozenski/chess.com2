@@ -1,0 +1,19 @@
+TODO 
+
+- If no moves are present period return  checkmate 
+
+BUGS
+- square threatened in rule manager needs to account for the possibility of a knight move or pawn move
+
+- en passant not giving turn over
+
+
+MAKING EXECUTABLE
+RUNNING: java -cp /home/trg/.vscode-server/data/User/workspaceStorage/52c930c9ec944460fa79524aaf195c74/redhat.java/jdt_ws/chess.com2_9bcbc8ab/bin chess.Chess
+
+UPDATING BIN: (in chess.com root)
+cp -R /home/trg/.vscode-server/data/User/workspaceStorage/52c930c9ec944460fa79524aaf195c74/redhat.java/jdt_ws/chess.com2_9bcbc8ab/bin bin
+RUNNING simplified: java -cp bin chess.Chess
+
+Black pieces still not rendering even though they are present in the jar file
+MAKING JAR: jar -cvfm chess.jar manifest.mf -C bin .
