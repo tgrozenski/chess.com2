@@ -55,9 +55,9 @@ This project is a Java-based implementation of a chess game, complete with GUI u
    git clone https://github.com/tgrozenski/chess.com2
    ```
 2.  Run the following to start the program:
-    ```bash
-    java -cp bin chess.Chess
-    ```
+   ```bash
+   cd chess.com2 && java -cp bin chess.Chess
+   ```
 
 ---
 
