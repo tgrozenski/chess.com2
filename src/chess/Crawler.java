@@ -173,7 +173,6 @@ public ArrayList<Coord> getSpacesTillTeamPiece(Coord pos, pinnedTo direction, in
 private boolean enemyValid() {
     if(enemyPiece != null && teamSpaces.size() == 0) {
         if(enemyPiece.pieceType != 'p' || enemyPiece.pieceType != 'n') {
-            System.out.println("Enemy Valid " + enemyPiece.notation);
             return true;
         }
         else {
@@ -181,7 +180,6 @@ private boolean enemyValid() {
         }
     }
     else {
-        System.out.println("Enemy is invalid");
         return false;
     }
 }

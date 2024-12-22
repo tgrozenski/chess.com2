@@ -18,6 +18,7 @@
 This project is a Java-based implementation of a chess game, complete with GUI using the Swing framework. The game aims to simulate a chess-playing experience with features like move validation, castling, en passant, and check detection. While it's a single-player setup (no AI is implemented), it is designed for two players to play on the same system or for one player to use it as a practice board.
 
 ---
+<img src="screenshots/activeboard.png" alt="drawing" width="600"/>
 
 ## Features
 
@@ -51,13 +52,13 @@ This project is a Java-based implementation of a chess game, complete with GUI u
 
 ### Steps to Set Up the Project
 1. Clone the repository:
-   ```bash
-   git clone https://github.com/tgrozenski/chess.com2
-   ```
+```bash
+git clone https://github.com/tgrozenski/chess.com2
+```
 2.  Run the following to start the program:
-   ```bash
-   cd chess.com2 && java -cp bin chess.Chess
-   ```
+```bash
+cd chess.com2 && java -cp bin chess.Chess
+```
 
 ---
 
